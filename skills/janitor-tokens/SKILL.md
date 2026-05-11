@@ -84,6 +84,7 @@ Budget: 200,000 tokens
 
 ## Related Skills
 
+- For the integrated visual dashboard: `skills-janitor dashboard --open --weeks 52`
 - For usage tracking: `/janitor-usage`
 - For removing broken skills: `/janitor-fix --prune`
 - For full health report: `/janitor-report`

@@ -24,6 +24,14 @@ If the user does not have Rust/Cargo, tell them to download the latest GitHub Re
 
 Run a full inventory scan of all Claude Code skills across every scope.
 
+If the user asks for an HTML report, visual report, pretty report, dashboard, or something they can open in a browser, prefer the integrated dashboard:
+
+```bash
+skills-janitor dashboard --open --weeks 52
+```
+
+Use plain `scan --json` only when they specifically want raw inventory data.
+
 ## How to Run
 
 ```bash
@@ -71,3 +79,4 @@ Present findings as a summary table:
 - For auto-fixing issues: `/janitor-fix`
 - For a full health report: `/janitor-report`
 - For token cost: `/janitor-tokens`
+- For a visual dashboard: `skills-janitor dashboard --open`

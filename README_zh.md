@@ -87,7 +87,14 @@ skills-janitor tokens [--budget N] [--weeks N] [--json]
 skills-janitor search <keyword> [--limit N] [--json]
 skills-janitor compare <skill-name> [--json]
 skills-janitor precheck <github-url-or-path> [--json]
-skills-janitor dashboard [--open]
+skills-janitor dashboard [--open] [--output path] [--weeks N] [--budget N]
+```
+
+Dashboard 是一个静态、自包含的本地 HTML 审计视图。它会突出 Critical/Warning 问题、未使用和低频技能、token 浪费、重复/重叠、使用频率、完整清单、插件、命令，以及最近 20 次快照：
+
+```bash
+skills-janitor dashboard --open --weeks 52
+skills-janitor dashboard --output target/tmp/janitor-dashboard.html --weeks 52 --budget 200000
 ```
 
 GitHub Releases 会发布 Windows、Linux、macOS 预编译压缩包。没有 Rust 工具链时，直接下载对应平台二进制。
@@ -100,6 +107,7 @@ GitHub Releases 会发布 Windows、Linux、macOS 预编译压缩包。没有 Ru
 /janitor-report         -> 健康检查（lint + 重复 + 损坏）
 /janitor-usage          -> 你实际调用了哪些技能
 /janitor-tokens         -> 每个技能的上下文窗口成本
+/janitor-audit "打开 dashboard" -> 可视化 HTML 仪表盘
 /janitor-search         -> 在 GitHub 搜索技能
 /janitor-search --compare my-skill  -> 与替代方案的市场分析
 /janitor-precheck https://github.com/user/skill  -> 安装前检查

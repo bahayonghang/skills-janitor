@@ -89,6 +89,7 @@ For each issue found, suggest:
 
 ## Related Skills
 
+- For the integrated visual dashboard: `skills-janitor dashboard --open --weeks 52`
 - For inventory only: `/janitor-audit`
 - For auto-fixing: `/janitor-fix`
 - For usage analytics: `/janitor-usage`

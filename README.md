@@ -87,7 +87,14 @@ skills-janitor tokens [--budget N] [--weeks N] [--json]
 skills-janitor search <keyword> [--limit N] [--json]
 skills-janitor compare <skill-name> [--json]
 skills-janitor precheck <github-url-or-path> [--json]
-skills-janitor dashboard [--open]
+skills-janitor dashboard [--open] [--output path] [--weeks N] [--budget N]
+```
+
+The dashboard is a static, self-contained HTML audit view. It highlights Critical/Warning issues, unused and low-frequency skills, token waste, duplicate overlap, usage frequency, inventory, plugins, commands, and the latest 20 embedded snapshots:
+
+```bash
+skills-janitor dashboard --open --weeks 52
+skills-janitor dashboard --output target/tmp/janitor-dashboard.html --weeks 52 --budget 200000
 ```
 
 GitHub Releases publish prebuilt archives for Windows, Linux, and macOS. Use those binaries if you do not have Rust installed.
@@ -100,6 +107,7 @@ Each skill has its own slash command with autocomplete:
 /janitor-report         -> health check (lint + duplicates + broken)
 /janitor-usage          -> which skills you actually invoke
 /janitor-tokens         -> context window cost per skill
+/janitor-audit "open dashboard" -> visual HTML dashboard
 /janitor-search         -> find skills on GitHub
 /janitor-search --compare my-skill  -> market analysis vs alternatives
 /janitor-precheck https://github.com/user/skill  -> check before installing
