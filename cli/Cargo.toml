@@ -1,0 +1,32 @@
+[package]
+name = "skills-janitor-cli"
+version = "2.0.0"
+edition = "2021"
+rust-version = "1.82"
+license = "MIT"
+description = "Cross-platform CLI for auditing and maintaining Claude Code and Codex skills."
+repository = "https://github.com/bahayonghang/skills-janitor"
+
+[[bin]]
+name = "skills-janitor"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+aho-corasick = "1"
+clap = { version = "4.5", features = ["derive", "env"] }
+dirs = "6"
+jiff = { version = "0.2", features = ["serde"] }
+open = "5"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tempfile = "3"
+ureq = { version = "3", features = ["json"] }
+walkdir = "2"
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+

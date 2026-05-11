@@ -1,0 +1,69 @@
+name: Release binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive: zip
+            bin: skills-janitor.exe
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive: tar.gz
+            bin: skills-janitor
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            archive: tar.gz
+            bin: skills-janitor
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            archive: tar.gz
+            bin: skills-janitor
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+      - name: Stage artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          name="skills-janitor-${{ matrix.target }}"
+          mkdir -p "dist/$name"
+          cp "target/${{ matrix.target }}/release/${{ matrix.bin }}" "dist/$name/"
+          cp README.md LICENSE "dist/$name/"
+          if [[ "${{ matrix.archive }}" == "zip" ]]; then
+            7z a "dist/$name.zip" "./dist/$name/*"
+          else
+            tar -C dist -czf "dist/$name.tar.gz" "$name"
+          fi
+      - name: Checksums
+        shell: bash
+        run: |
+          cd dist
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum skills-janitor-${{ matrix.target }}.* > skills-janitor-${{ matrix.target }}.sha256
+          else
+            shasum -a 256 skills-janitor-${{ matrix.target }}.* > skills-janitor-${{ matrix.target }}.sha256
+          fi
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/skills-janitor-${{ matrix.target }}.*

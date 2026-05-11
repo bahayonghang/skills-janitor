@@ -1,0 +1,20 @@
+[package]
+name = "skills-janitor"
+version = "2.0.0"
+edition = "2021"
+rust-version = "1.82"
+license = "MIT"
+description = "Installer shim for the Skills Janitor CLI."
+repository = "https://github.com/bahayonghang/skills-janitor"
+
+[workspace]
+members = ["cli"]
+resolver = "2"
+
+[[bin]]
+name = "skills-janitor"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+skills-janitor-cli = { path = "cli" }
