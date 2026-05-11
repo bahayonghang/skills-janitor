@@ -5,15 +5,40 @@ metadata:
   version: 2.0.0
 ---
 
+## CLI requirement
+
+Before doing anything else, check whether the Rust CLI is installed:
+
+```bash
+skills-janitor --version
+```
+
+If it is not installed, stop and tell the user to install it with Cargo:
+
+```bash
+cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+```
+
+If the user does not have Rust/Cargo, tell them to download the latest GitHub Release binary for their platform instead. Do not fall back to Python, Bash, or curl scripts unless the user explicitly asks for legacy mode.
 # Health Report
 
 Generate a comprehensive health report combining inventory, quality checks, duplicate detection, and broken skill findings.
 
-The `<scripts_dir>` is the `scripts/` directory next to the `skills/` folder that contains this skill.
-
 ## How to Run
 
-Run all analysis scripts and combine results:
+Run the unified health report:
+
+```bash
+skills-janitor report
+```
+
+For machine-readable output:
+
+```bash
+skills-janitor report --json
+```
+
+Legacy fallback only when explicitly requested:
 
 ```bash
 bash <scripts_dir>/scan.sh
@@ -23,16 +48,16 @@ bash <scripts_dir>/detect_dupes.sh
 
 ## What It Covers
 
-### Inventory (scan.sh)
+### Inventory (`skills-janitor scan`)
 - All skills across user, project, plugin, and account scopes
 - Symlink status, frontmatter fields, line counts
 
-### Quality Checks (lint.sh)
+### Quality Checks (`skills-janitor report`)
 - **Critical**: Broken symlinks, missing SKILL.md, missing frontmatter
 - **Warning**: Missing/empty name or description, description too short/long, missing version
 - **Info**: No body content, no Gotchas section, large files
 
-### Duplicate Detection (detect_dupes.sh)
+### Duplicate Detection (`skills-janitor report`)
 - Keyword overlap analysis using Jaccard similarity
 - Flags pairs with >30% overlap
 - Shows shared keywords and scopes

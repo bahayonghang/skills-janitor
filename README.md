@@ -58,6 +58,39 @@ Plus prior unreleased lint fixes (Windows compatibility, multiline descriptions,
 git clone https://github.com/khendzel/skills-janitor ~/.claude/skills/skills-janitor
 ```
 
+## Rust CLI
+
+Skills Janitor now ships a cross-platform Rust CLI named `skills-janitor`. The slash-command skills call this CLI first, so normal operation no longer depends on Python, Bash, or curl.
+
+Install from this repository with Cargo:
+
+```bash
+cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+```
+
+For local development:
+
+```bash
+just ci
+just install-local
+skills-janitor --version
+```
+
+Core commands:
+
+```bash
+skills-janitor scan --json
+skills-janitor report
+skills-janitor fix [--apply] [--prune]
+skills-janitor usage [--weeks N] [--json]
+skills-janitor tokens [--budget N] [--weeks N] [--json]
+skills-janitor search <keyword> [--limit N] [--json]
+skills-janitor compare <skill-name> [--json]
+skills-janitor precheck <github-url-or-path> [--json]
+skills-janitor dashboard [--open]
+```
+
+GitHub Releases publish prebuilt archives for Windows, Linux, and macOS. Use those binaries if you do not have Rust installed.
 ## Usage examples
 
 Each skill has its own slash command with autocomplete:
@@ -186,8 +219,9 @@ Skills Janitor auto-detects which platforms are installed and scans all of them.
 
 ## Requirements
 
-- Bash, Python 3, `curl`
-- No pip installs, no node modules
+- Rust CLI: `skills-janitor`
+- Runtime: no Python, Bash, curl, pip installs, or node modules required
+- Legacy `scripts/*.sh` remain as explicit fallback/compatibility helpers
 
 ## Structure
 
@@ -203,7 +237,11 @@ skills-janitor/
 │   ├── janitor-tokens/SKILL.md
 │   ├── janitor-search/SKILL.md
 │   └── janitor-precheck/SKILL.md
-├── scripts/                  # Shared bash+python scripts
+├── Cargo.toml                # installable CLI shim and workspace
+├── cli/                      # Rust CLI crate
+├── justfile                  # fmt/clippy/test/build/ci entry points
+├── .github/workflows/        # CI and release binary workflows
+├── scripts/                  # Legacy bash+python fallback scripts
 ├── demo.gif
 ├── LICENSE                   # MIT
 └── README.md
@@ -222,7 +260,7 @@ If you used v1.0 (9 skills), here's what changed:
 
 ## Contributing
 
-PRs welcome. Each skill is self-contained in `skills/janitor-*/SKILL.md`.
+PRs welcome. Run `just ci` before sending changes. Each skill is self-contained in `skills/janitor-*/SKILL.md`, while shared runtime behavior lives in the Rust CLI under `cli/`.
 
 ## License
 

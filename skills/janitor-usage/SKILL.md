@@ -5,13 +5,32 @@ metadata:
   version: 2.0.0
 ---
 
+## CLI requirement
+
+Before doing anything else, check whether the Rust CLI is installed:
+
+```bash
+skills-janitor --version
+```
+
+If it is not installed, stop and tell the user to install it with Cargo:
+
+```bash
+cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+```
+
+If the user does not have Rust/Cargo, tell them to download the latest GitHub Release binary for their platform instead. Do not fall back to Python, Bash, or curl scripts unless the user explicitly asks for legacy mode.
 # Usage Tracking
 
 Parse your Claude Code conversation history to see which skills you actually invoke and which are dead weight.
 
-The `<scripts_dir>` is the `scripts/` directory next to the `skills/` folder that contains this skill.
-
 ## How to Run
+
+```bash
+skills-janitor usage [--weeks N] [--json]
+```
+
+Legacy fallback only when explicitly requested:
 
 ```bash
 bash <scripts_dir>/usage.sh [--weeks N] [--json]

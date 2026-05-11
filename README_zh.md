@@ -58,6 +58,39 @@
 git clone https://github.com/bahayonghang/skills-janitor ~/.claude/skills/skills-janitor
 ```
 
+## Rust CLI
+
+Skills Janitor 现在提供跨平台 Rust CLI：`skills-janitor`。各 slash-command skill 会优先调用这个 CLI，因此正常运行不再依赖 Python、Bash 或 curl。
+
+使用 Cargo 从本仓库安装：
+
+```bash
+cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+```
+
+本地开发：
+
+```bash
+just ci
+just install-local
+skills-janitor --version
+```
+
+核心命令：
+
+```bash
+skills-janitor scan --json
+skills-janitor report
+skills-janitor fix [--apply] [--prune]
+skills-janitor usage [--weeks N] [--json]
+skills-janitor tokens [--budget N] [--weeks N] [--json]
+skills-janitor search <keyword> [--limit N] [--json]
+skills-janitor compare <skill-name> [--json]
+skills-janitor precheck <github-url-or-path> [--json]
+skills-janitor dashboard [--open]
+```
+
+GitHub Releases 会发布 Windows、Linux、macOS 预编译压缩包。没有 Rust 工具链时，直接下载对应平台二进制。
 ## 使用示例
 
 每个技能都有带自动补全的斜杠命令：
@@ -186,8 +219,9 @@ Skills Janitor 自动检测已安装的平台并扫描全部。
 
 ## 依赖
 
-- Bash、Python 3、`curl`
-- 无需 pip 安装，无需 node modules
+- Rust CLI：`skills-janitor`
+- 运行时：不需要 Python、Bash、curl、pip install 或 node modules
+- 旧 `scripts/*.sh` 保留为显式 fallback/兼容脚本
 
 ## 项目结构
 
@@ -203,7 +237,11 @@ skills-janitor/
 │   ├── janitor-tokens/SKILL.md
 │   ├── janitor-search/SKILL.md
 │   └── janitor-precheck/SKILL.md
-├── scripts/                  # 共享的 bash+python 脚本
+├── Cargo.toml                # 可安装 CLI shim 与 workspace
+├── cli/                      # Rust CLI crate
+├── justfile                  # fmt/clippy/test/build/ci 入口
+├── .github/workflows/        # CI 与 release 二进制 workflow
+├── scripts/                  # 旧 bash+python fallback 脚本
 ├── demo.gif
 ├── LICENSE                   # MIT
 └── README.md

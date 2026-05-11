@@ -5,20 +5,39 @@ metadata:
   version: 2.0.0
 ---
 
+## CLI requirement
+
+Before doing anything else, check whether the Rust CLI is installed:
+
+```bash
+skills-janitor --version
+```
+
+If it is not installed, stop and tell the user to install it with Cargo:
+
+```bash
+cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+```
+
+If the user does not have Rust/Cargo, tell them to download the latest GitHub Release binary for their platform instead. Do not fall back to Python, Bash, or curl scripts unless the user explicitly asks for legacy mode.
 # Pre-Install Overlap Check
 
 Check if a new skill would duplicate existing ones before installing it.
 
 ## Important: Ask for input first
 
-If the user did not provide a GitHub URL or local path, ASK them before running the script:
+If the user did not provide a GitHub URL or local path, ASK them before running the CLI:
 "Which skill do you want to check? Give me a GitHub URL (e.g. `https://github.com/user/repo/tree/main/skills/skill-name`) or a local path."
 
-Do NOT run the script without a source argument.
-
-The `<scripts_dir>` is the `scripts/` directory next to the `skills/` folder that contains this skill.
+Do NOT run the CLI without a source argument.
 
 ## How to Run
+
+```bash
+skills-janitor precheck <github-url-or-path> [--json]
+```
+
+Legacy fallback only when explicitly requested:
 
 ```bash
 bash <scripts_dir>/precheck.sh <github-url-or-path> [--json]
