@@ -119,6 +119,12 @@ pub struct DashboardArgs {
     /// Output path for the generated dashboard HTML.
     #[arg(long)]
     pub output: Option<PathBuf>,
+    /// Number of weeks of history to inspect for usage and token activity.
+    #[arg(long, default_value_t = 52)]
+    pub weeks: u32,
+    /// Context window budget used for token percentage calculations.
+    #[arg(long, default_value_t = 200_000)]
+    pub budget: u64,
 }
 
 pub fn run() -> Result<()> {

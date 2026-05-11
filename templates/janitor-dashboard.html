@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- skills-janitor dashboard template v2.0.0 -->
+<!-- skills-janitor dashboard template v2.1.0 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -7,618 +7,809 @@
 <title>Skills Janitor Dashboard</title>
 <style>
   :root {
-    --bg: #f5f5f7;
-    --card: #fff;
-    --text: #1d1d1f;
-    --text-secondary: #6e6e73;
-    --border: #e5e5e7;
-    --accent: #e8453c;
-    --accent-light: #fef0ef;
-    --green: #34c759;
-    --green-light: #edf9f0;
-    --blue: #007aff;
-    --blue-light: #eef4ff;
-    --orange: #ff9500;
-    --orange-light: #fff8ed;
-    --chart-line: #e8453c;
-    --chart-fill: rgba(232,69,60,0.08);
-    --chart-line2: #007aff;
-    --chart-fill2: rgba(0,122,255,0.08);
+    --bg: #0f172a;
+    --panel: rgba(255,255,255,0.94);
+    --text: #0f172a;
+    --muted: #64748b;
+    --line: #dbe3ee;
+    --red: #dc2626;
+    --red-soft: #fee2e2;
+    --amber: #d97706;
+    --amber-soft: #fef3c7;
+    --green: #16a34a;
+    --green-soft: #dcfce7;
+    --blue: #2563eb;
+    --blue-soft: #dbeafe;
+    --purple: #7c3aed;
+    --purple-soft: #ede9fe;
+    --ink: #020617;
+    --shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+    --radius: 22px;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
+    margin: 0;
+    min-height: 100vh;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: var(--text);
-    line-height: 1.5;
-    padding: 2rem;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(59,130,246,0.35), transparent 28rem),
+      radial-gradient(circle at 85% 10%, rgba(248,113,113,0.25), transparent 26rem),
+      linear-gradient(135deg, #f8fafc 0%, #eef2ff 52%, #ecfeff 100%);
+    padding: 32px;
   }
-
-  .header {
-    display: flex;
+  .shell { max-width: 1440px; margin: 0 auto; }
+  .hero {
+    position: relative;
+    overflow: hidden;
+    color: white;
+    background:
+      linear-gradient(135deg, rgba(15,23,42,0.98), rgba(30,41,59,0.94)),
+      radial-gradient(circle at 80% 0%, rgba(96,165,250,0.5), transparent 20rem);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 32px;
+    padding: 30px;
+    box-shadow: var(--shadow);
+    margin-bottom: 22px;
+  }
+  .hero::after {
+    content: "";
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    right: -130px;
+    top: -180px;
+    background: radial-gradient(circle, rgba(248,113,113,0.34), transparent 68%);
+    pointer-events: none;
+  }
+  .hero-top, .toolbar, .section-head, .filters { display: flex; }
+  .hero-top { align-items: flex-start; justify-content: space-between; gap: 24px; position: relative; z-index: 1; }
+  .eyebrow { color: #93c5fd; font-weight: 800; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
+  h1 { margin: 8px 0 8px; font-size: clamp(34px, 5vw, 62px); line-height: 0.95; letter-spacing: -0.06em; }
+  .subtitle { margin: 0; max-width: 840px; color: #cbd5e1; font-size: 16px; }
+  .meta-stack { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; min-width: 260px; }
+  .meta-pill {
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.08);
+    color: #e2e8f0;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .toolbar {
+    position: relative;
+    z-index: 1;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 2rem;
+    gap: 14px;
+    margin-top: 24px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(255,255,255,0.14);
   }
-
-  .header h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+  .toolbar select {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 12px;
+    padding: 8px 12px;
+    max-width: 520px;
   }
+  .toolbar option { color: var(--text); }
+  .note { color: #cbd5e1; font-size: 12px; }
 
-  .header .meta {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.25rem;
-    margin-bottom: 2rem;
-  }
-
+  .kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-bottom: 20px; }
   .card {
-    background: var(--card);
+    background: var(--panel);
+    border: 1px solid rgba(148,163,184,0.28);
+    border-radius: var(--radius);
+    box-shadow: 0 18px 52px rgba(15, 23, 42, 0.10);
+    padding: 20px;
+  }
+  .kpi { min-height: 150px; display: flex; flex-direction: column; justify-content: space-between; }
+  .kpi-label { color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+  .kpi-value { font-size: clamp(30px, 4vw, 48px); font-weight: 900; line-height: 1; letter-spacing: -0.06em; margin: 12px 0 8px; }
+  .kpi-value small { font-size: 16px; color: var(--muted); letter-spacing: -0.02em; }
+  .kpi-foot { color: var(--muted); font-size: 13px; }
+  .meter { width: 100%; height: 8px; background: #e5e7eb; border-radius: 999px; overflow: hidden; margin-top: 12px; }
+  .meter > span { display: block; height: 100%; width: var(--w, 0%); border-radius: inherit; background: var(--green); }
+  .meter.warn > span { background: var(--amber); }
+  .meter.bad > span { background: var(--red); }
+
+  .split { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(340px, 0.88fr); gap: 20px; align-items: stretch; margin-bottom: 20px; }
+  .section { margin-bottom: 20px; }
+  .section-head { align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+  h2 { margin: 0; font-size: 22px; letter-spacing: -0.03em; }
+  .section-copy { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .actions { display: grid; gap: 10px; }
+  .action-card {
+    display: grid;
+    grid-template-columns: auto minmax(0,1fr) auto;
+    gap: 12px;
+    align-items: start;
+    padding: 14px;
+    border: 1px solid var(--line);
     border-radius: 16px;
-    padding: 1.5rem;
-    border: 1px solid var(--border);
+    background: linear-gradient(180deg, #fff, #f8fafc);
   }
-
-  .card-label {
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 0.5rem;
+  .rank {
+    width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px;
+    font-size: 12px; font-weight: 900; background: #e2e8f0; color: #334155;
   }
-
-  .card-label.red { color: var(--accent); }
-  .card-label.green { color: var(--green); }
-  .card-label.blue { color: var(--blue); }
-  .card-label.orange { color: var(--orange); }
-
-  .big-number {
-    font-size: 3rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-  }
-
-  .big-number span {
-    font-size: 1.25rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-  }
-
-  .stat-row {
-    display: flex;
-    gap: 2rem;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border);
-  }
-
-  .stat-item {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .stat-item .label {
-    font-size: 0.65rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-secondary);
-  }
-
-  .stat-item .value {
-    font-size: 1.5rem;
-    font-weight: 700;
-  }
-
-  .stat-item .value.red { color: var(--accent); }
-  .stat-item .value.green { color: var(--green); }
-
-  .card-wide {
-    grid-column: 1 / -1;
-  }
-
-  .chart-container {
-    position: relative;
-    width: 100%;
-    height: 200px;
-    margin-top: 1rem;
-  }
-
-  .chart-container canvas {
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-    font-size: 0.85rem;
-  }
-
-  th {
-    text-align: left;
-    font-size: 0.65rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-secondary);
-    padding: 0.5rem 0.75rem;
-    border-bottom: 2px solid var(--border);
-  }
-
-  th.right, td.right { text-align: right; }
-
-  td {
-    padding: 0.6rem 0.75rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  tr:last-child td { border-bottom: none; }
-
+  .action-title { font-weight: 850; margin-bottom: 4px; }
+  .action-meta { color: var(--muted); font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
   .badge {
-    display: inline-block;
-    padding: 0.15rem 0.5rem;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    font-weight: 600;
-  }
-
-  .badge-ok { background: var(--green-light); color: var(--green); }
-  .badge-warn { background: var(--orange-light); color: var(--orange); }
-  .badge-crit { background: var(--accent-light); color: var(--accent); }
-  .badge-info { background: var(--blue-light); color: var(--blue); }
-  .badge-plugin { background: #f3f0ff; color: #7c3aed; }
-
-  .bar-bg {
-    background: var(--border);
-    border-radius: 4px;
-    height: 6px;
-    width: 100%;
-    overflow: hidden;
-  }
-
-  .bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.6s ease;
-  }
-
-  .bar-fill.red { background: var(--accent); }
-  .bar-fill.green { background: var(--green); }
-  .bar-fill.blue { background: var(--blue); }
-
-  .snapshot-nav {
-    display: flex;
-    gap: 0.5rem;
+    display: inline-flex;
     align-items: center;
-    margin-bottom: 1.5rem;
+    gap: 4px;
+    border-radius: 999px;
+    padding: 4px 9px;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
   }
+  .badge.critical { color: var(--red); background: var(--red-soft); }
+  .badge.warning { color: var(--amber); background: var(--amber-soft); }
+  .badge.info { color: var(--blue); background: var(--blue-soft); }
+  .badge.ok { color: var(--green); background: var(--green-soft); }
+  .badge.scope { color: #475569; background: #f1f5f9; }
+  .badge.plugin { color: var(--purple); background: var(--purple-soft); }
+  .badge.ambiguous { color: #be123c; background: #ffe4e6; }
+  .empty { color: var(--muted); padding: 16px; border: 1px dashed var(--line); border-radius: 16px; background: #f8fafc; }
 
-  .snapshot-nav select {
-    font-size: 0.85rem;
-    padding: 0.4rem 0.75rem;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--card);
+  .chart-wrap { height: 305px; }
+  canvas { width: 100%; height: 100%; display: block; }
+  .mini-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 14px; }
+  .mini { background: #f8fafc; border: 1px solid var(--line); border-radius: 16px; padding: 12px; }
+  .mini span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.07em; }
+  .mini strong { display: block; font-size: 24px; letter-spacing: -0.04em; margin-top: 4px; overflow-wrap: anywhere; }
+
+  .filters { flex-wrap: wrap; gap: 10px; align-items: center; }
+  .filters input, .filters select {
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--text);
+    border-radius: 12px;
+    padding: 9px 11px;
+    min-height: 38px;
   }
-
-  .snapshot-nav .count {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+  button {
+    border: 1px solid var(--line);
+    background: white;
+    color: #334155;
+    border-radius: 12px;
+    padding: 9px 12px;
+    min-height: 38px;
+    cursor: pointer;
+    font-weight: 750;
   }
+  button:hover { border-color: #94a3b8; }
+  button.active { background: var(--ink); color: white; border-color: var(--ink); }
 
-  .footer {
-    margin-top: 3rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border);
-    text-align: center;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
+  .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 16px; background: white; }
+  table { width: 100%; border-collapse: collapse; min-width: 840px; }
+  th, td { padding: 12px 14px; border-bottom: 1px solid #edf2f7; vertical-align: top; text-align: left; }
+  th { position: sticky; top: 0; background: #f8fafc; z-index: 1; color: #64748b; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+  tr:last-child td { border-bottom: 0; }
+  td.right, th.right { text-align: right; }
+  .skill-name { font-weight: 850; }
+  .path { color: var(--muted); font-size: 11px; max-width: 520px; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .barline { display: grid; grid-template-columns: 1fr 52px; gap: 10px; align-items: center; min-width: 160px; }
+  .bar-bg { height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: inherit; background: var(--blue); }
+  .bar-fill.zero { background: #cbd5e1; }
+  .muted { color: var(--muted); }
+  .nowrap { white-space: nowrap; }
+
+  .details-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .compact-list { display: grid; gap: 10px; }
+  .compact-item { padding: 11px 0; border-bottom: 1px solid #edf2f7; }
+  .compact-item:last-child { border-bottom: 0; }
+  .compact-title { font-weight: 820; }
+  .compact-meta { color: var(--muted); font-size: 12px; margin-top: 3px; overflow-wrap: anywhere; }
+  .footer { color: var(--muted); font-size: 12px; text-align: center; padding: 24px 0 8px; }
+
+  @media (max-width: 1120px) {
+    body { padding: 18px; }
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .split, .details-grid { grid-template-columns: 1fr; }
+    .hero-top, .toolbar { flex-direction: column; align-items: stretch; }
+    .meta-stack { justify-content: flex-start; }
   }
-
-  .legend {
-    display: flex;
-    gap: 1.5rem;
-    margin-top: 0.5rem;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-  }
-
-  .legend-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 4px;
-    vertical-align: middle;
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .hero { padding: 22px; border-radius: 24px; }
+    .kpis { grid-template-columns: 1fr; }
+    .mini-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
-
-<div class="header">
-  <h1>Skills Janitor</h1>
-  <div class="meta" id="headerMeta"></div>
-</div>
-
-<div class="snapshot-nav" id="snapshotNav" style="display:none">
-  <label>Snapshot:</label>
-  <select id="snapshotSelect" onchange="renderSnapshot(this.value)"></select>
-  <span class="count" id="snapshotCount"></span>
-</div>
-
-<div class="grid" id="topCards"></div>
-
-<div class="grid">
-  <div class="card card-wide" id="trendCard" style="display:none">
-    <div class="card-label blue">Weekly Skill Invocations</div>
-    <div class="legend">
-      <span><span class="legend-dot" style="background:var(--chart-line)"></span>Invocations</span>
-      <span><span class="legend-dot" style="background:var(--chart-line2)"></span>Active Skills</span>
+<div class="shell">
+  <header class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="eyebrow">Local skills audit</div>
+        <h1>Skills Janitor Dashboard</h1>
+        <p class="subtitle">A static, self-contained view of health issues, unused skills, token waste, usage frequency, duplicate overlap, plugins, and commands. Usage is observed from local history and is approximate.</p>
+      </div>
+      <div class="meta-stack" id="heroMeta"></div>
     </div>
-    <div class="chart-container"><canvas id="trendChart"></canvas></div>
-  </div>
-</div>
-
-<div class="grid">
-  <div class="card card-wide" id="skillTableCard">
-    <div class="card-label">Skill Inventory</div>
-    <table id="skillTable"></table>
-  </div>
-</div>
-
-<div class="grid">
-  <div class="card" id="pluginCard">
-    <div class="card-label blue">Plugins</div>
-    <table id="pluginTable"></table>
-  </div>
-  <div class="card" id="lintCard">
-    <div class="card-label orange">Quality Issues</div>
-    <div id="lintContent"></div>
-  </div>
-</div>
-
-<div class="grid" id="historySection" style="display:none">
-  <div class="card card-wide">
-    <div class="card-label">Snapshot History</div>
-    <div class="legend" style="margin-bottom:0.5rem">
-      <span><span class="legend-dot" style="background:var(--chart-line)"></span>Tokens Wasted</span>
-      <span><span class="legend-dot" style="background:var(--chart-line2)"></span>Active Skills</span>
+    <div class="toolbar">
+      <div id="snapshotNav" style="display:none">
+        <label for="snapshotSelect" class="note">Snapshot</label><br>
+        <select id="snapshotSelect"></select>
+      </div>
+      <div class="note" id="snapshotNote"></div>
     </div>
-    <div class="chart-container"><canvas id="historyChart"></canvas></div>
-  </div>
-</div>
+  </header>
 
-<div class="footer">
-  Made with &#9829; by Buzzwoo E-Com Kitchen | https://www.buzzwoo.de
+  <main id="app">
+    <section class="kpis" id="kpis"></section>
+
+    <section class="split">
+      <div class="card">
+        <div class="section-head">
+          <div>
+            <h2>Attention Inbox</h2>
+            <div class="section-copy">Sorted by Critical → Warning → unused high-token → low-frequency → duplicate overlap.</div>
+          </div>
+        </div>
+        <div class="actions" id="attentionList"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-head">
+          <div>
+            <h2>Usage Frequency</h2>
+            <div class="section-copy">Recent observed counts over the selected dashboard period.</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="usageChart"></canvas></div>
+        <div class="mini-grid" id="usageMini"></div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="section-head">
+        <div>
+          <h2>Usage Frequency Table</h2>
+          <div class="section-copy">Search, filter status, or jump to unused-only cleanup candidates.</div>
+        </div>
+        <div class="filters">
+          <input id="usageSearch" type="search" placeholder="Search skill, scope, path...">
+          <select id="usageStatus">
+            <option value="all">All statuses</option>
+            <option value="critical">Critical</option>
+            <option value="warning">Warning</option>
+            <option value="unused">Unused</option>
+            <option value="low">Low-frequency</option>
+            <option value="active">Active</option>
+          </select>
+          <button id="unusedOnlyBtn" type="button">Unused only</button>
+        </div>
+      </div>
+      <div class="table-wrap"><table id="usageTable"></table></div>
+    </section>
+
+    <section class="card section">
+      <div class="section-head">
+        <div>
+          <h2>Inventory</h2>
+          <div class="section-copy">Merged by real path so the same symlinked skill can appear across scopes without duplicate noise.</div>
+        </div>
+        <div class="filters">
+          <input id="inventorySearch" type="search" placeholder="Search inventory...">
+          <select id="inventoryStatus">
+            <option value="all">All inventory</option>
+            <option value="critical">Critical</option>
+            <option value="warning">Warning</option>
+            <option value="ok">OK</option>
+            <option value="ambiguous">Ambiguous name</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap"><table id="inventoryTable"></table></div>
+    </section>
+
+    <section class="details-grid section">
+      <div class="card">
+        <div class="section-head"><div><h2>Duplicates</h2><div class="section-copy">Name collisions and description overlap.</div></div></div>
+        <div id="duplicatesList" class="compact-list"></div>
+      </div>
+      <div class="card">
+        <div class="section-head"><div><h2>Plugins / Commands</h2><div class="section-copy">Secondary environment surface.</div></div></div>
+        <div id="pluginsCommands" class="compact-list"></div>
+      </div>
+      <div class="card">
+        <div class="section-head"><div><h2>Snapshot History</h2><div class="section-copy">Latest 20 embedded snapshots.</div></div></div>
+        <div class="chart-wrap" style="height:210px"><canvas id="historyChart"></canvas></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer">Generated locally by <strong>skills-janitor dashboard</strong>. No CDN, no external network dependencies.</div>
 </div>
 
 <!-- Snapshot data storage - must be before main script -->
 <script type="application/json" id="snapshotData">[]</script>
 
 <script>
-// --- Snapshot storage (embedded, max 20) ---
-const MAX_SNAPSHOTS = 20;
+(function () {
+  const state = { snap: null, skills: [], inventory: [], usageUnusedOnly: false };
+  const $ = (id) => document.getElementById(id);
+  const fmt = new Intl.NumberFormat();
+  const palette = { red: '#dc2626', amber: '#d97706', green: '#16a34a', blue: '#2563eb', gray: '#94a3b8' };
 
-function getSnapshots() {
-  const el = document.getElementById('snapshotData');
-  if (!el) return [];
-  try { return JSON.parse(el.textContent); } catch(e) { return []; }
-}
-
-function drawChart(canvasId, labels, datasets) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const rect = canvas.parentElement.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = rect.width * dpr;
-  canvas.height = rect.height * dpr;
-  ctx.scale(dpr, dpr);
-  const W = rect.width, H = rect.height;
-  const pad = { top: 20, right: 20, bottom: 40, left: 50 };
-  const plotW = W - pad.left - pad.right;
-  const plotH = H - pad.top - pad.bottom;
-
-  // Find global max across all datasets
-  let allVals = datasets.flatMap(ds => ds.data);
-  let maxVal = Math.max(...allVals, 1);
-  maxVal = Math.ceil(maxVal / 5) * 5 || 5;
-
-  ctx.clearRect(0, 0, W, H);
-
-  // Grid lines
-  ctx.strokeStyle = '#e5e5e7';
-  ctx.lineWidth = 0.5;
-  for (let i = 0; i <= 4; i++) {
-    const y = pad.top + plotH - (plotH * i / 4);
-    ctx.beginPath();
-    ctx.moveTo(pad.left, y);
-    ctx.lineTo(pad.left + plotW, y);
-    ctx.stroke();
-    ctx.fillStyle = '#6e6e73';
-    ctx.font = '10px -apple-system, sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText(Math.round(maxVal * i / 4), pad.left - 8, y + 3);
+  function esc(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
+  function num(value) { return Number(value || 0); }
+  function pct(n, d) { return d ? Math.round((n / d) * 1000) / 10 : 0; }
+  function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+  function badge(label, kind) { return `<span class="badge ${esc(kind || 'info')}">${esc(label)}</span>`; }
+  function firstNonEmpty(...values) { return values.find(v => v !== undefined && v !== null && String(v).length > 0) ?? ''; }
 
-  // X labels
-  ctx.fillStyle = '#6e6e73';
-  ctx.font = '10px -apple-system, sans-serif';
-  ctx.textAlign = 'center';
-  labels.forEach((label, i) => {
-    const x = pad.left + (plotW * i / (labels.length - 1 || 1));
-    ctx.save();
-    ctx.translate(x, pad.top + plotH + 15);
-    ctx.rotate(-0.4);
-    ctx.fillText(label, 0, 0);
-    ctx.restore();
-  });
-
-  // Draw each dataset
-  datasets.forEach(ds => {
-    const points = ds.data.map((v, i) => ({
-      x: pad.left + (plotW * i / (labels.length - 1 || 1)),
-      y: pad.top + plotH - (plotH * v / maxVal)
-    }));
-
-    // Fill
-    if (ds.fill) {
-      ctx.fillStyle = ds.fill;
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, pad.top + plotH);
-      points.forEach(p => ctx.lineTo(p.x, p.y));
-      ctx.lineTo(points[points.length-1].x, pad.top + plotH);
-      ctx.fill();
+  function getSnapshots() {
+    const el = $('snapshotData');
+    if (!el) return [];
+    try {
+      const parsed = JSON.parse(el.textContent || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_err) {
+      return [];
     }
+  }
 
-    // Line
-    ctx.strokeStyle = ds.color;
-    ctx.lineWidth = 2;
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-    ctx.stroke();
-
-    // Dots
-    points.forEach(p => {
-      ctx.fillStyle = ds.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-      ctx.fill();
+  function byName(items) {
+    const map = new Map();
+    (items || []).forEach(item => {
+      const name = item && item.name;
+      if (!name) return;
+      if (!map.has(name)) map.set(name, []);
+      map.get(name).push(item);
     });
-  });
-}
+    return map;
+  }
 
-function renderSnapshot(idx) {
-  const snapshots = getSnapshots();
-  const snap = snapshots[idx];
-  if (!snap) return;
+  function normalizeSnapshot(snap) {
+    const scan = snap.scan || {};
+    const usage = snap.usage || {};
+    const tokens = snap.tokens || {};
+    const lint = snap.lint || {};
+    const duplicates = snap.duplicates || {};
+    const scanSkills = Array.isArray(scan.skills) ? scan.skills : [];
+    const usageMap = byName(usage.skills || []);
+    const tokenMap = byName(tokens.skills || []);
+    const issuesByPath = new Map();
+    const issuesBySkill = new Map();
+    (lint.issues || []).forEach(issue => {
+      const path = issue.path || '';
+      const skill = issue.skill || '';
+      if (path) {
+        if (!issuesByPath.has(path)) issuesByPath.set(path, []);
+        issuesByPath.get(path).push(issue);
+      }
+      if (skill) {
+        if (!issuesBySkill.has(skill)) issuesBySkill.set(skill, []);
+        issuesBySkill.get(skill).push(issue);
+      }
+    });
 
-  const scan = snap.scan || {};
-  const tokens = snap.tokens || {};
-  const usage = snap.usage || {};
-  const lint = snap.lint || {};
+    const distinctByName = new Map();
+    scanSkills.forEach(record => {
+      const name = record.folder || record.name || '';
+      const key = record.real_path || record.path || `${record.scope || 'unknown'}:${name}`;
+      if (!distinctByName.has(name)) distinctByName.set(name, new Set());
+      distinctByName.get(name).add(key);
+    });
+    const ambiguousNames = new Set([...distinctByName.entries()].filter(([, keys]) => keys.size > 1).map(([name]) => name));
+    (duplicates.name_collisions || []).forEach(c => c.name && ambiguousNames.add(c.name));
 
-  document.getElementById('headerMeta').textContent =
-    `Snapshot: ${snap.timestamp} | skills-janitor`;
-
-  // --- Top cards ---
-  const totalTokens = tokens.total_tokens || 0;
-  const wastedTokens = tokens.total_unused_tokens || 0;
-  const activeTokens = tokens.total_used_tokens || 0;
-  const budget = tokens.budget || 200000;
-  const skillCount = (scan.skills || []).length;
-  const pluginCount = (scan.plugins || []).length;
-  const activeCount = usage.active_count || 0;
-  const unusedCount = usage.unused_count || 0;
-  const brokenCount = scan.broken_symlinks || 0;
-
-  document.getElementById('topCards').innerHTML = `
-    <div class="card">
-      <div class="card-label red">Context Window Cost</div>
-      <div class="big-number">${totalTokens.toLocaleString()} <span>tokens</span></div>
-      <div style="margin-top:0.5rem;color:var(--text-secondary);font-size:0.85rem">
-        ${(totalTokens/budget*100).toFixed(1)}% of ${(budget/1000).toFixed(0)}k budget
-      </div>
-      <div class="stat-row">
-        <div class="stat-item"><span class="label">Active</span><span class="value green">${activeTokens.toLocaleString()}</span></div>
-        <div class="stat-item"><span class="label">Wasted</span><span class="value red">${wastedTokens.toLocaleString()}</span></div>
-        <div class="stat-item"><span class="label">Budget</span><span class="value">${(budget/1000).toFixed(0)}k</span></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-label green">Skill Activity</div>
-      <div class="big-number">${activeCount} <span>/ ${activeCount + unusedCount} active</span></div>
-      <div style="margin-top:0.75rem">
-        <div class="bar-bg"><div class="bar-fill green" style="width:${activeCount/(activeCount+unusedCount||1)*100}%"></div></div>
-      </div>
-      <div class="stat-row">
-        <div class="stat-item"><span class="label">User Skills</span><span class="value">${skillCount}</span></div>
-        <div class="stat-item"><span class="label">Plugins</span><span class="value">${pluginCount}</span></div>
-        <div class="stat-item"><span class="label">Broken</span><span class="value ${brokenCount?'red':''}">${brokenCount}</span></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-label orange">Health Score</div>
-      <div class="big-number">${computeHealthScore(snap)}<span>/100</span></div>
-      <div style="margin-top:0.75rem">
-        <div class="bar-bg"><div class="bar-fill ${computeHealthScore(snap)>=80?'green':computeHealthScore(snap)>=50?'blue':'red'}" style="width:${computeHealthScore(snap)}%"></div></div>
-      </div>
-      <div class="stat-row">
-        <div class="stat-item"><span class="label">Critical</span><span class="value ${lint.critical?'red':''}">${lint.critical||0}</span></div>
-        <div class="stat-item"><span class="label">Warnings</span><span class="value">${lint.warnings||0}</span></div>
-        <div class="stat-item"><span class="label">Info</span><span class="value">${lint.info||0}</span></div>
-      </div>
-    </div>
-  `;
-
-  // --- Weekly trend chart ---
-  const weekly = usage.weekly_totals || {};
-  const weekLabels = Object.keys(weekly).sort();
-  if (weekLabels.length > 1) {
-    document.getElementById('trendCard').style.display = '';
-    const weekData = weekLabels.map(w => weekly[w]);
-    // Count unique active skills per week from usage.skills
-    const weekActiveData = weekLabels.map(w => {
-      let count = 0;
-      (usage.skills || []).forEach(s => {
-        const ew = s.explicit_weekly || {};
-        const dw = s.dispatched_weekly || {};
-        const estw = s.estimated_weekly || {};
-        if ((ew[w]||0) + (dw[w]||0) + (estw[w]||0) > 0) count++;
+    const byRealPath = new Map();
+    scanSkills.forEach(record => {
+      const realPath = record.real_path || record.path || `${record.scope || 'unknown'}:${record.folder || record.name || 'unknown'}`;
+      if (!byRealPath.has(realPath)) {
+        byRealPath.set(realPath, {
+          real_path: realPath,
+          paths: new Set(),
+          scopes: new Set(),
+          platforms: new Set(),
+          names: new Set(),
+          records: [],
+          has_skill_file: false,
+          has_frontmatter: false,
+          has_body: false,
+          is_symlink: false,
+          symlink_target: '',
+          description: '',
+          version: '',
+          line_count: 0,
+          extra_files: 0,
+          issues: []
+        });
+      }
+      const item = byRealPath.get(realPath);
+      item.records.push(record);
+      item.paths.add(record.path || '');
+      item.scopes.add(record.scope || 'unknown');
+      item.platforms.add(record.platform || 'unknown');
+      item.names.add(record.folder || record.name || 'unnamed');
+      item.has_skill_file = item.has_skill_file || !!record.has_skill_file;
+      item.has_frontmatter = item.has_frontmatter || !!record.has_frontmatter;
+      item.has_body = item.has_body || !!record.has_body;
+      item.is_symlink = item.is_symlink || !!record.is_symlink;
+      item.symlink_target = firstNonEmpty(item.symlink_target, record.symlink_target);
+      item.description = firstNonEmpty(item.description, record.description);
+      item.version = firstNonEmpty(item.version, record.version);
+      item.line_count = Math.max(item.line_count, num(record.line_count));
+      item.extra_files += num(record.extra_files);
+      (issuesByPath.get(record.path || '') || []).forEach(issue => item.issues.push(issue));
+      (issuesBySkill.get(record.folder || '') || []).forEach(issue => {
+        if (!item.issues.includes(issue)) item.issues.push(issue);
       });
-      return count;
     });
-    setTimeout(() => drawChart('trendChart', weekLabels, [
-      { data: weekData, color: 'var(--chart-line)', fill: 'var(--chart-fill)' },
-      { data: weekActiveData, color: 'var(--chart-line2)', fill: 'var(--chart-fill2)' }
-    ]), 50);
+
+    const inventory = [...byRealPath.values()].map(item => {
+      const names = [...item.names].filter(Boolean).sort();
+      const name = names[0] || 'unnamed';
+      const severities = item.issues.map(i => i.severity);
+      let status = 'ok';
+      if (!item.has_skill_file || severities.includes('critical')) status = 'critical';
+      else if (severities.includes('warning') || !item.has_frontmatter) status = 'warning';
+      const ambiguous = names.some(name => ambiguousNames.has(name));
+      return { ...item, name, names, ambiguous, status };
+    }).sort((a, b) => statusRank(a.status) - statusRank(b.status) || a.name.localeCompare(b.name));
+
+    const allNames = new Set();
+    scanSkills.forEach(s => allNames.add(s.folder || s.name));
+    (usage.skills || []).forEach(s => allNames.add(s.name));
+    (tokens.skills || []).forEach(s => allNames.add(s.name));
+    allNames.delete(undefined); allNames.delete('');
+
+    const skills = [...allNames].map(name => {
+      const inv = inventory.filter(item => item.names.includes(name));
+      const usageEntries = usageMap.get(name) || [];
+      const tokenEntries = tokenMap.get(name) || [];
+      const usageCount = Math.max(0, ...usageEntries.map(item => num(item.count)));
+      const tokenCost = tokenEntries.reduce((sum, item) => sum + num(item.tokens), 0);
+      const periodWeeks = num(snap.period_weeks || usage.period_weeks || 52) || 52;
+      const usesPerWeek = usageCount / Math.max(1, periodWeeks);
+      const ambiguous = ambiguousNames.has(name) || inv.length > 1;
+      const issueList = inv.flatMap(item => item.issues || []);
+      let status = usageCount === 0 ? 'unused' : usesPerWeek < 0.25 ? 'low' : 'active';
+      if (issueList.some(i => i.severity === 'critical')) status = 'critical';
+      else if (issueList.some(i => i.severity === 'warning') && status !== 'critical') status = 'warning';
+      return {
+        name,
+        scope: [...new Set([...inv.flatMap(i => [...i.scopes]), ...usageEntries.map(u => u.scope), ...tokenEntries.map(t => t.scope)].filter(Boolean))].sort().join(', ') || 'unknown',
+        count: usageCount,
+        usesPerWeek,
+        tokenCost,
+        budgetPercent: tokenEntries.reduce((sum, item) => sum + num(item.budget_percent), 0),
+        unused: usageCount === 0,
+        description: firstNonEmpty(...usageEntries.map(u => u.description), ...inv.map(i => i.description)),
+        path: firstNonEmpty(...tokenEntries.map(t => t.path), ...inv.map(i => i.real_path)),
+        realPathCount: inv.length,
+        ambiguous,
+        status,
+        issues: issueList,
+        inventory: inv
+      };
+    }).sort((a, b) => b.count - a.count || b.tokenCost - a.tokenCost || a.name.localeCompare(b.name));
+
+    return { scan, usage, tokens, lint, duplicates, inventory, skills, periodWeeks: num(snap.period_weeks || usage.period_weeks || 52) || 52, budget: num(snap.budget || tokens.budget || 200000) || 200000 };
   }
 
-  // --- Skill table ---
-  // Merge three data sources: scan (user skills), usage (dispatched), tokens (cost)
-  const usageMap = {};
-  (usage.skills || []).forEach(s => usageMap[s.name] = s);
-  const tokenMap = {};
-  (tokens.skills || []).forEach(s => tokenMap[s.name] = s);
-  const scanMap = {};
-  (scan.skills || []).forEach(s => scanMap[s.name] = s);
+  function statusRank(status) {
+    return ({ critical: 0, warning: 1, unused: 2, low: 3, active: 4, ok: 5 })[status] ?? 9;
+  }
 
-  // Collect all unique skill names across all sources
-  const allNames = new Set();
-  Object.keys(usageMap).forEach(n => allNames.add(n));
-  Object.keys(tokenMap).forEach(n => allNames.add(n));
-  Object.keys(scanMap).forEach(n => allNames.add(n));
+  function computeHealthScore(model) {
+    const summary = (model.lint && model.lint.summary) || {};
+    const duplicatePenalty = num((model.duplicates.name_collisions || []).length) * 5 + num((model.duplicates.description_overlaps || []).length) * 2;
+    const unusedPct = pct(num(model.usage.unused_skills), num(model.usage.total_skills));
+    let score = 100;
+    score -= num(summary.critical) * 18;
+    score -= num(summary.warnings) * 5;
+    score -= Math.min(num(summary.info), 10);
+    score -= Math.min(duplicatePenalty, 16);
+    if (unusedPct > 75) score -= 10;
+    else if (unusedPct > 50) score -= 6;
+    score -= Math.min(num(model.scan.broken_symlinks) * 15, 30);
+    return clamp(Math.round(score), 0, 100);
+  }
 
-  const allSkills = [];
-  allNames.forEach(name => {
-    const u = usageMap[name] || {};
-    const t = tokenMap[name] || {};
-    const s = scanMap[name] || {};
-    const scope = s.scope || t.scope || u.scope || 'plugin';
-    const hasScan = !!scanMap[name];
-    allSkills.push({
-      name: name,
-      scope: scope,
-      tokens: t.tokens || 0,
-      slash: u.explicit || 0,
-      dispatched: u.dispatched || 0,
-      estimated: u.estimated || 0,
-      total: u.total || 0,
-      lastUsed: u.last_used || t.last_used || 'never',
-      status: hasScan ? (s.has_frontmatter ? (s.version ? 'ok' : 'warn') : 'crit') : 'ok',
-      issues: hasScan ? (!s.has_frontmatter ? 'No frontmatter' : !s.version ? 'No version' : '') : ''
+  function renderKpis(model) {
+    const summary = model.lint.summary || {};
+    const active = num(model.usage.active_skills);
+    const unused = num(model.usage.unused_skills);
+    const total = num(model.usage.total_skills || (active + unused));
+    const totalCost = num(model.tokens.total_token_cost);
+    const unusedCost = num(model.tokens.unused_token_cost);
+    const score = computeHealthScore(model);
+    const scoreKind = score >= 80 ? '' : score >= 55 ? 'warn' : 'bad';
+    const costPct = pct(totalCost, model.budget);
+    const unusedCostPct = pct(unusedCost, model.budget);
+    const activePct = pct(active, total);
+    $('kpis').innerHTML = [
+      kpi('Health Score', `${score}<small>/100</small>`, `${num(summary.critical)} critical · ${num(summary.warnings)} warnings`, score, scoreKind),
+      kpi('Critical / Warn', `${num(summary.critical)}<small> / ${num(summary.warnings)}</small>`, `${num(summary.info)} info · ${num(summary.total)} total issues`, Math.max(0, 100 - num(summary.critical) * 25 - num(summary.warnings) * 5), scoreKind),
+      kpi('Active / Unused', `${active}<small> / ${unused}</small>`, `${total} tracked skills · ${activePct}% active`, activePct, activePct < 30 ? 'bad' : activePct < 60 ? 'warn' : ''),
+      kpi('Token Cost', `${fmt.format(totalCost)}<small> tok</small>`, `${costPct}% of ${fmt.format(model.budget)} · ${fmt.format(unusedCost)} unused (${unusedCostPct}%)`, Math.min(costPct, 100), costPct > 60 ? 'bad' : costPct > 30 ? 'warn' : ''),
+      kpi('Plugins / Commands', `${num((model.scan.plugins || []).length)}<small> / ${num((model.scan.commands || []).length)}</small>`, `${num(model.scan.broken_symlinks)} broken symlink(s)`, Math.min(100, num((model.scan.plugins || []).length) * 8 + num((model.scan.commands || []).length) * 4), num(model.scan.broken_symlinks) ? 'bad' : '')
+    ].join('');
+  }
+
+  function kpi(label, value, foot, meter, kind) {
+    return `<article class="card kpi"><div><div class="kpi-label">${esc(label)}</div><div class="kpi-value">${value}</div><div class="kpi-foot">${esc(foot)}</div></div><div class="meter ${esc(kind || '')}" style="--w:${clamp(num(meter), 0, 100)}%"><span></span></div></article>`;
+  }
+
+  function buildAttention(model) {
+    const actions = [];
+    (model.lint.issues || []).forEach(issue => {
+      actions.push({ priority: issue.severity === 'critical' ? 0 : issue.severity === 'warning' ? 1 : 5, kind: issue.severity, title: issue.skill || 'unknown skill', meta: issue.message || '', path: issue.path || '' });
     });
-  });
+    model.skills.filter(s => s.unused && s.tokenCost > 0).slice().sort((a, b) => b.tokenCost - a.tokenCost).slice(0, 10).forEach(s => {
+      const budget = typeof s.budgetPercent === 'number' ? s.budgetPercent.toFixed(1) : s.budgetPercent;
+      actions.push({ priority: 2, kind: 'warning', title: s.name, meta: `Unused in ${model.periodWeeks}w; estimated token cost ${fmt.format(s.tokenCost)} (${budget}% budget).`, path: s.path });
+    });
+    model.skills.filter(s => !s.unused && s.usesPerWeek > 0 && s.usesPerWeek < 0.25).slice(0, 10).forEach(s => {
+      actions.push({ priority: 3, kind: 'info', title: s.name, meta: `Low-frequency: ${s.count} observed use(s), ${s.usesPerWeek.toFixed(2)} uses/week.`, path: s.path });
+    });
+    (model.duplicates.name_collisions || []).forEach(c => actions.push({ priority: 4, kind: 'warning', title: c.name || 'name collision', meta: `${(c.entries || []).length} distinct real paths share this skill name.`, path: '' }));
+    (model.duplicates.description_overlaps || []).slice(0, 8).forEach(o => actions.push({ priority: 4, kind: 'info', title: `${o.skill_a || '?'} ↔ ${o.skill_b || '?'}`, meta: `${num(o.similarity)}% description overlap · ${(o.common_keywords || []).join(', ')}`, path: '' }));
+    actions.sort((a, b) => a.priority - b.priority || a.title.localeCompare(b.title));
+    return actions.slice(0, 24);
+  }
 
-  allSkills.sort((a, b) => b.total - a.total);
+  function renderAttention(model) {
+    const actions = buildAttention(model);
+    if (!actions.length) {
+      $('attentionList').innerHTML = '<div class="empty">No urgent action found in this snapshot.</div>';
+      return;
+    }
+    $('attentionList').innerHTML = actions.map((a, idx) => `
+      <article class="action-card">
+        <div class="rank">${idx + 1}</div>
+        <div>
+          <div class="action-title">${esc(a.title)} ${badge(a.kind || 'info', a.kind || 'info')}</div>
+          <div class="action-meta">${esc(a.meta)}</div>
+          ${a.path ? `<div class="action-meta">${esc(a.path)}</div>` : ''}
+        </div>
+        <div>${a.priority <= 1 ? badge('fix first', 'critical') : a.priority === 2 ? badge('cleanup', 'warning') : badge('review', 'info')}</div>
+      </article>`).join('');
+  }
 
-  let tableHTML = `<thead><tr>
-    <th>Skill</th><th>Scope</th><th class="right">Tokens</th>
-    <th class="right">Slash</th><th class="right">Dispatched</th>
-    <th class="right">Total</th><th>Last Used</th><th>Status</th>
-  </tr></thead><tbody>`;
-  allSkills.forEach(s => {
-    const badge = s.status === 'ok' ? '<span class="badge badge-ok">OK</span>' :
-                  s.status === 'warn' ? `<span class="badge badge-warn">${s.issues}</span>` :
-                  `<span class="badge badge-crit">${s.issues}</span>`;
-    const scopeBadge = s.scope === 'plugin' ? '<span class="badge badge-plugin">plugin</span>' :
-                       `<span class="badge badge-info">${s.scope}</span>`;
-    tableHTML += `<tr>
-      <td><strong>${s.name}</strong></td>
-      <td>${scopeBadge}</td>
-      <td class="right">${s.tokens ? s.tokens.toLocaleString() : '-'}</td>
-      <td class="right">${s.slash || '-'}</td>
-      <td class="right">${s.dispatched || '-'}</td>
-      <td class="right"><strong>${s.total}</strong></td>
-      <td>${s.lastUsed}</td>
-      <td>${badge}</td>
+  function renderUsageChart(model) {
+    const top = model.skills.slice().sort((a, b) => b.count - a.count || b.tokenCost - a.tokenCost).slice(0, 12).reverse();
+    drawBars('usageChart', top.map(s => s.name), top.map(s => s.count), top.map(s => s.unused ? palette.gray : palette.blue));
+    const active = model.skills.filter(s => s.count > 0).length;
+    const unusedHighCost = model.skills.filter(s => s.unused && s.tokenCost > 0).sort((a, b) => b.tokenCost - a.tokenCost)[0];
+    const mostUsed = model.skills.filter(s => s.count > 0).sort((a, b) => b.count - a.count)[0];
+    $('usageMini').innerHTML = `
+      <div class="mini"><span>Observed active</span><strong>${fmt.format(active)}</strong></div>
+      <div class="mini"><span>Most used</span><strong>${esc(mostUsed ? mostUsed.name : 'none')}</strong></div>
+      <div class="mini"><span>Top waste</span><strong>${esc(unusedHighCost ? unusedHighCost.name : 'none')}</strong></div>`;
+  }
+
+  function drawBars(canvasId, labels, values, colors) {
+    const canvas = $(canvasId); if (!canvas) return;
+    const parent = canvas.parentElement;
+    const rect = parent.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(320, rect.width);
+    const height = Math.max(180, rect.height);
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    const pad = { top: 18, right: 24, bottom: 28, left: 132 };
+    const plotW = width - pad.left - pad.right;
+    const plotH = height - pad.top - pad.bottom;
+    const max = Math.max(1, ...values);
+    ctx.font = '11px ui-sans-serif, system-ui';
+    ctx.textBaseline = 'middle';
+    values.forEach((value, i) => {
+      const rows = values.length || 1;
+      const rowH = plotH / rows;
+      const y = pad.top + i * rowH + rowH * 0.18;
+      const h = Math.max(7, rowH * 0.48);
+      const w = plotW * (value / max);
+      ctx.fillStyle = '#64748b';
+      ctx.textAlign = 'right';
+      const label = labels[i].length > 20 ? labels[i].slice(0, 19) + '…' : labels[i];
+      ctx.fillText(label, pad.left - 10, y + h / 2);
+      ctx.fillStyle = '#e2e8f0';
+      roundRect(ctx, pad.left, y, plotW, h, 7); ctx.fill();
+      ctx.fillStyle = colors[i] || palette.blue;
+      roundRect(ctx, pad.left, y, Math.max(value ? 2 : 0, w), h, 7); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.textAlign = 'left';
+      ctx.fillText(fmt.format(value), pad.left + Math.min(plotW - 28, w + 8), y + h / 2);
+    });
+  }
+
+  function drawHistory(snapshots) {
+    const points = snapshots.map(s => {
+      const model = normalizeSnapshot(s);
+      return { label: String(s.timestamp || '').split('T')[0], score: computeHealthScore(model), waste: num(model.tokens.unused_token_cost) };
+    });
+    drawLine('historyChart', points);
+  }
+
+  function drawLine(canvasId, points) {
+    const canvas = $(canvasId); if (!canvas) return;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(320, rect.width);
+    const height = Math.max(160, rect.height);
+    canvas.width = width * dpr; canvas.height = height * dpr;
+    const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0,0,width,height);
+    if (!points.length) return;
+    const pad = { top: 18, right: 20, bottom: 34, left: 42 };
+    const plotW = width - pad.left - pad.right;
+    const plotH = height - pad.top - pad.bottom;
+    const maxWaste = Math.max(1, ...points.map(p => p.waste));
+    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) { const y = pad.top + plotH * i / 4; ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + plotW, y); ctx.stroke(); }
+    drawSeries(points.map((p, i) => ({ x: pad.left + (plotW * i / Math.max(1, points.length - 1)), y: pad.top + plotH - (p.score / 100) * plotH })), palette.green);
+    drawSeries(points.map((p, i) => ({ x: pad.left + (plotW * i / Math.max(1, points.length - 1)), y: pad.top + plotH - (p.waste / maxWaste) * plotH })), palette.red);
+    ctx.fillStyle = '#64748b'; ctx.font = '10px ui-sans-serif, system-ui'; ctx.textAlign = 'center';
+    points.forEach((p, i) => { if (points.length <= 6 || i === 0 || i === points.length - 1 || i % Math.ceil(points.length/5) === 0) ctx.fillText(p.label.slice(5), pad.left + (plotW * i / Math.max(1, points.length - 1)), height - 12); });
+    function drawSeries(series, color) { ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath(); series.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); series.forEach(p => { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill(); }); }
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    const rr = Math.min(r, h / 2, w / 2);
+    ctx.beginPath(); ctx.moveTo(x + rr, y); ctx.arcTo(x + w, y, x + w, y + h, rr); ctx.arcTo(x + w, y + h, x, y + h, rr); ctx.arcTo(x, y + h, x, y, rr); ctx.arcTo(x, y, x + w, y, rr); ctx.closePath();
+  }
+
+  function renderUsageTable() {
+    const query = ($('usageSearch').value || '').toLowerCase();
+    const status = $('usageStatus').value;
+    const maxCount = Math.max(1, ...state.skills.map(s => s.count));
+    const rows = state.skills.filter(s => {
+      const haystack = `${s.name} ${s.scope} ${s.path} ${s.description}`.toLowerCase();
+      if (query && !haystack.includes(query)) return false;
+      if (state.usageUnusedOnly && !s.unused) return false;
+      if (status !== 'all') {
+        if (status === 'unused' && !s.unused) return false;
+        else if (status === 'low' && s.status !== 'low') return false;
+        else if (status === 'active' && s.status !== 'active') return false;
+        else if (['critical','warning'].includes(status) && s.status !== status) return false;
+      }
+      return true;
+    });
+    $('usageTable').innerHTML = `<thead><tr><th>Skill</th><th>Scope</th><th class="right">Count</th><th>Uses/week</th><th class="right">Token cost</th><th>Status</th><th>Path</th></tr></thead><tbody>${rows.map(s => usageRow(s, maxCount)).join('') || `<tr><td colspan="7" class="muted">No skills match the current filters.</td></tr>`}</tbody>`;
+  }
+  function usageRow(s, maxCount) {
+    const statusBadge = s.status === 'critical' ? badge('Critical', 'critical') : s.status === 'warning' ? badge('Warning', 'warning') : s.unused ? badge('Unused', 'warning') : s.status === 'low' ? badge('Low freq', 'info') : badge('Active', 'ok');
+    return `<tr>
+      <td><div class="skill-name">${esc(s.name)} ${s.ambiguous ? badge('ambiguous', 'ambiguous') : ''}</div><div class="muted">${esc(s.description).slice(0, 140)}</div></td>
+      <td>${esc(s.scope).split(', ').filter(Boolean).map(v => badge(v, 'scope')).join(' ')}</td>
+      <td class="right"><strong>${fmt.format(s.count)}</strong></td>
+      <td><div class="barline"><div class="bar-bg"><div class="bar-fill ${s.count ? '' : 'zero'}" style="width:${pct(s.count, maxCount)}%"></div></div><span>${s.usesPerWeek.toFixed(2)}</span></div></td>
+      <td class="right nowrap">${fmt.format(s.tokenCost)}</td>
+      <td>${statusBadge}</td>
+      <td><div class="path">${esc(s.path)}</div></td>
     </tr>`;
-  });
-  tableHTML += '</tbody>';
-  document.getElementById('skillTable').innerHTML = tableHTML;
+  }
 
-  // --- Plugin table ---
-  const plugins = scan.plugins || [];
-  let plugHTML = '<thead><tr><th>Plugin</th><th>Source</th><th>Scope</th><th>Version</th></tr></thead><tbody>';
-  plugins.forEach(p => {
-    plugHTML += `<tr><td><strong>${p.name}</strong></td><td>${p.source}</td><td>${p.scope}</td><td>${p.version}</td></tr>`;
-  });
-  plugHTML += '</tbody>';
-  document.getElementById('pluginTable').innerHTML = plugHTML;
-
-  // --- Lint ---
-  const lintIssues = lint.issues || [];
-  if (lintIssues.length === 0) {
-    document.getElementById('lintContent').innerHTML = '<p style="color:var(--green);font-weight:600;margin-top:0.5rem">No critical or warning issues found.</p>';
-  } else {
-    let lintHTML = '<table><thead><tr><th>Severity</th><th>Skill</th><th>Issue</th></tr></thead><tbody>';
-    lintIssues.forEach(i => {
-      const badge = i.severity === 'critical' ? 'badge-crit' : i.severity === 'warning' ? 'badge-warn' : 'badge-info';
-      lintHTML += `<tr><td><span class="badge ${badge}">${i.severity}</span></td><td>${i.skill}</td><td>${i.message}</td></tr>`;
+  function renderInventoryTable() {
+    const query = ($('inventorySearch').value || '').toLowerCase();
+    const status = $('inventoryStatus').value;
+    const rows = state.inventory.filter(item => {
+      const haystack = `${item.name} ${item.names.join(' ')} ${[...item.scopes].join(' ')} ${[...item.paths].join(' ')} ${item.real_path} ${item.description}`.toLowerCase();
+      if (query && !haystack.includes(query)) return false;
+      if (status === 'ambiguous') return item.ambiguous;
+      if (status !== 'all' && item.status !== status) return false;
+      return true;
     });
-    lintHTML += '</tbody></table>';
-    document.getElementById('lintContent').innerHTML = lintHTML;
+    $('inventoryTable').innerHTML = `<thead><tr><th>Skill</th><th>Scope / Platform</th><th>Status</th><th class="right">Lines</th><th class="right">Extra files</th><th>Path / real path</th></tr></thead><tbody>${rows.map(inventoryRow).join('') || `<tr><td colspan="6" class="muted">No inventory rows match the current filters.</td></tr>`}</tbody>`;
+  }
+  function inventoryRow(item) {
+    const statusBadge = item.status === 'critical' ? badge('Critical', 'critical') : item.status === 'warning' ? badge('Warning', 'warning') : badge('OK', 'ok');
+    const issueText = (item.issues || []).slice(0, 2).map(i => `${i.severity}: ${i.message}`).join(' · ');
+    const scopes = [...item.scopes].filter(Boolean).sort().map(v => badge(v, 'scope')).join(' ');
+    const platforms = [...item.platforms].filter(Boolean).sort().join(', ');
+    return `<tr>
+      <td><div class="skill-name">${esc(item.names.join(' / '))} ${item.ambiguous ? badge('ambiguous', 'ambiguous') : ''}</div><div class="muted">${esc(item.description).slice(0, 140)}</div></td>
+      <td>${scopes}<div class="muted">${esc(platforms)}</div></td>
+      <td>${statusBadge}${item.is_symlink ? ' ' + badge('symlink', 'info') : ''}${issueText ? `<div class="muted">${esc(issueText)}</div>` : ''}</td>
+      <td class="right">${fmt.format(item.line_count)}</td>
+      <td class="right">${fmt.format(item.extra_files)}</td>
+      <td><div class="path">${esc([...item.paths].filter(Boolean).join('\n'))}</div><div class="path"><strong>real:</strong> ${esc(item.real_path)}</div></td>
+    </tr>`;
   }
 
-  // --- History chart ---
-  if (snapshots.length > 1) {
-    document.getElementById('historySection').style.display = '';
-    const histLabels = snapshots.map(s => s.timestamp.split('T')[0]);
-    const histWasted = snapshots.map(s => (s.tokens || {}).total_unused_tokens || 0);
-    const histActive = snapshots.map(s => (s.usage || {}).active_count || 0);
-    setTimeout(() => drawChart('historyChart', histLabels, [
-      { data: histWasted, color: 'var(--chart-line)', fill: 'var(--chart-fill)' },
-      { data: histActive, color: 'var(--chart-line2)', fill: 'var(--chart-fill2)' }
-    ]), 100);
+  function renderDuplicates(model) {
+    const collisions = model.duplicates.name_collisions || [];
+    const overlaps = model.duplicates.description_overlaps || [];
+    const items = [];
+    collisions.slice(0, 8).forEach(c => items.push(`<div class="compact-item"><div class="compact-title">${badge('Name collision', 'warning')} ${esc(c.name)}</div><div class="compact-meta">${(c.entries || []).length} distinct skill file(s)</div></div>`));
+    overlaps.slice(0, 8).forEach(o => items.push(`<div class="compact-item"><div class="compact-title">${badge(num(o.similarity) + '% overlap', 'info')} ${esc(o.skill_a)} ↔ ${esc(o.skill_b)}</div><div class="compact-meta">${esc((o.common_keywords || []).join(', '))}</div></div>`));
+    $('duplicatesList').innerHTML = items.join('') || '<div class="empty">No duplicate collisions or high description overlap.</div>';
   }
-}
 
-function computeHealthScore(snap) {
-  let score = 100;
-  const lint = snap.lint || {};
-  score -= (lint.critical || 0) * 20;
-  score -= (lint.warnings || 0) * 5;
-  score -= (lint.info || 0) * 1;
-  const tokens = snap.tokens || {};
-  if (tokens.waste_pct > 10) score -= 10;
-  else if (tokens.waste_pct > 5) score -= 5;
-  const scan = snap.scan || {};
-  score -= (scan.broken_symlinks || 0) * 15;
-  return Math.max(0, Math.min(100, score));
-}
+  function renderPluginsCommands(model) {
+    const plugins = model.scan.plugins || [];
+    const commands = model.scan.commands || [];
+    const items = [];
+    plugins.slice(0, 10).forEach(p => items.push(`<div class="compact-item"><div class="compact-title">${badge('plugin', 'plugin')} ${esc(p.name)}</div><div class="compact-meta">${esc(p.source)} · ${esc(p.scope)} · ${esc(p.version)}</div></div>`));
+    commands.slice(0, 10).forEach(c => items.push(`<div class="compact-item"><div class="compact-title">${badge('command', 'info')} /${esc(c.name)}</div><div class="compact-meta">${esc(c.scope)} · ${esc(c.path)}</div></div>`));
+    $('pluginsCommands').innerHTML = items.join('') || '<div class="empty">No plugin or command records found.</div>';
+  }
 
-// --- Init ---
-const snapshots = getSnapshots();
-if (snapshots.length > 1) {
-  const nav = document.getElementById('snapshotNav');
-  nav.style.display = 'flex';
-  const sel = document.getElementById('snapshotSelect');
-  snapshots.forEach((s, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = s.timestamp;
-    sel.appendChild(opt);
-  });
-  sel.value = snapshots.length - 1;
-  document.getElementById('snapshotCount').textContent = `(${snapshots.length} snapshots)`;
-}
-renderSnapshot(snapshots.length - 1);
+  function renderMeta(snap, model, snapshots) {
+    $('heroMeta').innerHTML = `
+      <span class="meta-pill">Schema v${esc(snap.schema_version || 'legacy')}</span>
+      <span class="meta-pill">${esc(model.periodWeeks)} weeks</span>
+      <span class="meta-pill">Budget ${fmt.format(model.budget)} tokens</span>
+      <span class="meta-pill">${fmt.format(snapshots.length)} embedded snapshot(s)</span>`;
+    $('snapshotNote').textContent = `Current snapshot: ${snap.timestamp || 'unknown'} · static local HTML`;
+  }
+
+  function renderSnapshot(index, snapshots) {
+    const snap = snapshots[index];
+    if (!snap) {
+      $('app').innerHTML = '<div class="card empty">No snapshots embedded yet. Run: skills-janitor dashboard --output data/janitor-dashboard.html --weeks 52</div>';
+      return;
+    }
+    const model = normalizeSnapshot(snap);
+    state.snap = snap;
+    state.skills = model.skills;
+    state.inventory = model.inventory;
+    renderMeta(snap, model, snapshots);
+    renderKpis(model);
+    renderAttention(model);
+    renderUsageChart(model);
+    renderUsageTable();
+    renderInventoryTable();
+    renderDuplicates(model);
+    renderPluginsCommands(model);
+    drawHistory(snapshots);
+  }
+
+  function bindFilters() {
+    ['usageSearch', 'usageStatus'].forEach(id => $(id).addEventListener('input', renderUsageTable));
+    $('unusedOnlyBtn').addEventListener('click', () => {
+      state.usageUnusedOnly = !state.usageUnusedOnly;
+      $('unusedOnlyBtn').classList.toggle('active', state.usageUnusedOnly);
+      renderUsageTable();
+    });
+    ['inventorySearch', 'inventoryStatus'].forEach(id => $(id).addEventListener('input', renderInventoryTable));
+  }
+
+  function init() {
+    const snapshots = getSnapshots();
+    if (snapshots.length > 1) {
+      $('snapshotNav').style.display = 'block';
+      $('snapshotSelect').innerHTML = snapshots.map((s, i) => `<option value="${i}">${esc(i + 1)} · ${esc(s.timestamp || 'unknown')}</option>`).join('');
+      $('snapshotSelect').value = String(snapshots.length - 1);
+      $('snapshotSelect').addEventListener('change', (event) => renderSnapshot(Number(event.target.value), snapshots));
+    }
+    bindFilters();
+    renderSnapshot(snapshots.length - 1, snapshots);
+    window.addEventListener('resize', () => {
+      if (!state.snap) return;
+      const idx = $('snapshotSelect') ? Number($('snapshotSelect').value || snapshots.length - 1) : snapshots.length - 1;
+      const model = normalizeSnapshot(snapshots[idx]);
+      renderUsageChart(model);
+      drawHistory(snapshots);
+    });
+  }
+
+  init();
+})();
 </script>
-
-
-
 </body>
 </html>

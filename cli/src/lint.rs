@@ -97,6 +97,12 @@ fn lint_record(record: &SkillRecord, issues: &mut Vec<LintIssue>) {
         return;
     }
     if !record.has_skill_file {
+        push(
+            issues,
+            Severity::Critical,
+            record,
+            "Missing SKILL.md - directory is not a loadable skill",
+        );
         return;
     }
     if !record.has_frontmatter {
@@ -320,5 +326,30 @@ mod tests {
         };
         let report = build_lint_report_from_records(&[record]);
         assert!(report.summary.critical >= 1);
+    }
+
+    #[test]
+    fn flags_missing_skill_file_as_critical() {
+        let record = SkillRecord {
+            folder: "learned".into(),
+            scope: "user".into(),
+            platform: "claude".into(),
+            path: "learned".into(),
+            real_path: "learned".into(),
+            is_symlink: false,
+            symlink_target: String::new(),
+            has_skill_file: false,
+            name: String::new(),
+            description: String::new(),
+            version: String::new(),
+            has_frontmatter: false,
+            has_body: false,
+            line_count: 0,
+            extra_files: 2,
+        };
+        let report = build_lint_report_from_records(&[record]);
+        assert_eq!(report.summary.critical, 1);
+        assert_eq!(report.issues[0].skill, "learned");
+        assert!(report.issues[0].message.contains("Missing SKILL.md"));
     }
 }
