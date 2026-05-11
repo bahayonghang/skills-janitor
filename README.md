@@ -1,6 +1,12 @@
-# Skills Janitor
+# Skills Janitor (Windows Edition)
+
+[English](README.md) | [中文](README_zh.md)
 
 > Audit, track usage, and manage your AI coding skills - 7 focused skills, zero dependencies.
+
+This is a fork of [khendzel/skills-janitor](https://github.com/khendzel/skills-janitor). Thanks to Krzysztof Hendzel and the original contributors for the excellent foundation.
+
+**本仓库目标：在上游仓库的基础上添加对 Windows 的核心支持。** 包括路径兼容、shell 行为适配、Windows 原生环境下的完整功能运行。
 
 Works with **Claude Code** and **OpenAI Codex**.
 

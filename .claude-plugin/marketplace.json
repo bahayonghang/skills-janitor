@@ -1,13 +1,14 @@
 {
   "name": "skills-janitor",
   "owner": {
-    "name": "Krzysztof Hendzel",
-    "url": "https://github.com/khendzel"
+    "name": "李永航",
+    "url": "https://github.com/bahayonghang"
   },
   "metadata": {
-    "description": "Audit, track usage, and manage your Claude Code skills. 7 actions, zero dependencies.",
+    "description": "Audit, track usage, and manage your Claude Code skills. 7 actions, zero dependencies. Fork with Windows support.",
     "version": "1.2.0",
-    "repository": "https://github.com/khendzel/skills-janitor"
+    "repository": "https://github.com/bahayonghang/skills-janitor",
+    "upstream": "https://github.com/khendzel/skills-janitor"
   },
   "plugins": [
     {
