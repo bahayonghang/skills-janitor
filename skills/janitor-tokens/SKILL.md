@@ -2,7 +2,7 @@
 name: janitor-tokens
 description: "Show how many context window tokens each skill consumes. Use when the user asks about token cost, context budget, skill size, or wants to know which skills waste the most context space."
 metadata:
-  version: 2.0.0
+  version: 2.0.1
 ---
 
 ## CLI requirement
@@ -84,7 +84,15 @@ Budget: 200,000 tokens
 
 ## Related Skills
 
-- For the integrated visual dashboard: `skills-janitor dashboard --open --weeks 52`
+- For the integrated visual dashboard: `skills-janitor dashboard --open`
 - For usage tracking: `/janitor-usage`
 - For removing broken skills: `/janitor-fix --prune`
 - For full health report: `/janitor-report`
+
+## Dashboard Troubleshooting
+
+Use `skills-janitor dashboard --open` for browser reports. Only add `--weeks N` when the user explicitly asks for a custom analysis period.
+
+If a dashboard command fails with `unexpected argument '--weeks'`, retry once without `--weeks` and report that the installed CLI is stale; users should update to `skills-janitor` 2.0.1 or newer.
+
+If it fails with `Dashboard template not found`, tell the user to install or update to the embedded-template CLI build (`skills-janitor` 2.0.1 or newer). Raw `scan --json` is a fallback, not the main dashboard path.

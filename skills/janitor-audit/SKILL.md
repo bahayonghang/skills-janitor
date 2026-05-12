@@ -2,7 +2,7 @@
 name: janitor-audit
 description: "Show all your installed skills. Use when the user asks for a skill inventory, skill list, or wants to audit what's installed."
 metadata:
-  version: 2.0.0
+  version: 2.0.1
 ---
 
 ## CLI requirement
@@ -27,8 +27,14 @@ Run a full inventory scan of all Claude Code skills across every scope.
 If the user asks for an HTML report, visual report, pretty report, dashboard, or something they can open in a browser, prefer the integrated dashboard:
 
 ```bash
-skills-janitor dashboard --open --weeks 52
+skills-janitor dashboard --open
 ```
+
+Only add `--weeks N` when the user explicitly asks for a custom analysis period.
+
+If the dashboard command fails with `unexpected argument '--weeks'`, retry once without `--weeks` and report that the installed CLI is stale; users should update to `skills-janitor` 2.0.1 or newer.
+
+If it fails with `Dashboard template not found`, tell the user to install or update to the embedded-template CLI build (`skills-janitor` 2.0.1 or newer). Raw `scan --json` is a fallback for inventory data, not the preferred dashboard path.
 
 Use plain `scan --json` only when they specifically want raw inventory data.
 

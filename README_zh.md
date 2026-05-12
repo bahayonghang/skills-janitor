@@ -93,7 +93,7 @@ skills-janitor dashboard [--open] [--output path] [--weeks N] [--budget N]
 Dashboard 是一个静态、自包含的本地 HTML 审计视图。它会突出 Critical/Warning 问题、未使用和低频技能、token 浪费、重复/重叠、使用频率、完整清单、插件、命令，以及最近 20 次快照：
 
 ```bash
-skills-janitor dashboard --open --weeks 52
+skills-janitor dashboard --open
 skills-janitor dashboard --output target/tmp/janitor-dashboard.html --weeks 52 --budget 200000
 ```
 

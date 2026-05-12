@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.1 (2026-05-12)
+
+### Fixed
+- **`skills-janitor dashboard` no longer depends on the caller's current directory.** Missing dashboard files are initialized from an embedded CLI asset instead of `./templates/janitor-dashboard.html`.
+- **Dashboard skill guidance handles stale 2.0.0 binaries.** Dashboard instructions now prefer `skills-janitor dashboard --open` and document the retry/update path for old binaries that reject `--weeks` or cannot find the runtime template.
+
 ## v2.0.0 (2026-04-30)
 
 ### Fixed (correctness)

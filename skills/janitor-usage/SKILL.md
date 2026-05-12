@@ -2,7 +2,7 @@
 name: janitor-usage
 description: "Show which skills you use and which you never use. Use when the user asks about skill usage, unused skills, or wants to know which skills are active."
 metadata:
-  version: 2.0.0
+  version: 2.0.1
 ---
 
 ## CLI requirement
@@ -74,7 +74,15 @@ Results are saved to `data/usage-history.json`, keeping the last 12 weeks for tr
 
 ## Related Skills
 
-- For the integrated visual dashboard: `skills-janitor dashboard --open --weeks 52`
+- For the integrated visual dashboard: `skills-janitor dashboard --open`
 - For finding better alternatives: `/janitor-search`
 - For comparing against the market: `/janitor-search --compare`
 - For removing unused skills: `/janitor-fix --prune`
+
+## Dashboard Troubleshooting
+
+Use `skills-janitor dashboard --open` for browser reports. Only add `--weeks N` when the user explicitly asks for a custom analysis period.
+
+If a dashboard command fails with `unexpected argument '--weeks'`, retry once without `--weeks` and report that the installed CLI is stale; users should update to `skills-janitor` 2.0.1 or newer.
+
+If it fails with `Dashboard template not found`, tell the user to install or update to the embedded-template CLI build (`skills-janitor` 2.0.1 or newer). Raw `scan --json` is a fallback, not the main dashboard path.

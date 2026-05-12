@@ -93,7 +93,7 @@ skills-janitor dashboard [--open] [--output path] [--weeks N] [--budget N]
 The dashboard is a static, self-contained HTML audit view. It highlights Critical/Warning issues, unused and low-frequency skills, token waste, duplicate overlap, usage frequency, inventory, plugins, commands, and the latest 20 embedded snapshots:
 
 ```bash
-skills-janitor dashboard --open --weeks 52
+skills-janitor dashboard --open
 skills-janitor dashboard --output target/tmp/janitor-dashboard.html --weeks 52 --budget 200000
 ```
 

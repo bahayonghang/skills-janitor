@@ -2,7 +2,7 @@
 name: janitor-search
 description: "Search GitHub for new skills to install. Also use with --compare to analyze a local skill against GitHub alternatives and marketplace competition."
 metadata:
-  version: 2.0.0
+  version: 2.0.1
 ---
 
 ## CLI requirement

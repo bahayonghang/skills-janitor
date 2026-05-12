@@ -2,7 +2,7 @@
 name: janitor-report
 description: "Full health check of all your skills in one report. Use when the user wants to check for errors, find duplicates, detect broken skills, or get a complete overview of skill health."
 metadata:
-  version: 2.0.0
+  version: 2.0.1
 ---
 
 ## CLI requirement
@@ -89,8 +89,16 @@ For each issue found, suggest:
 
 ## Related Skills
 
-- For the integrated visual dashboard: `skills-janitor dashboard --open --weeks 52`
+- For the integrated visual dashboard: `skills-janitor dashboard --open`
 - For inventory only: `/janitor-audit`
 - For auto-fixing: `/janitor-fix`
 - For usage analytics: `/janitor-usage`
 - For token cost: `/janitor-tokens`
+
+## Dashboard Troubleshooting
+
+Use `skills-janitor dashboard --open` for browser reports. Only add `--weeks N` when the user explicitly asks for a custom analysis period.
+
+If a dashboard command fails with `unexpected argument '--weeks'`, retry once without `--weeks` and report that the installed CLI is stale; users should update to `skills-janitor` 2.0.1 or newer.
+
+If it fails with `Dashboard template not found`, tell the user to install or update to the embedded-template CLI build (`skills-janitor` 2.0.1 or newer). Raw `scan --json` is a fallback, not the main dashboard path.

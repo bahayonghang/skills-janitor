@@ -17,6 +17,7 @@ const SNAPSHOT_MARKER_START: &str = "<script type=\"application/json\" id=\"snap
 const SNAPSHOT_MARKER_END: &str = "</script>";
 const MAX_SNAPSHOTS: usize = 20;
 const DASHBOARD_SCHEMA_VERSION: u32 = 2;
+const EMBEDDED_TEMPLATE: &str = include_str!("../assets/janitor-dashboard.html");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DashboardSnapshot {
@@ -49,11 +50,7 @@ pub fn update_dashboard(output: Option<PathBuf>, weeks: u32, budget: u64) -> Res
         fs::create_dir_all(parent)?;
     }
     if !dashboard.is_file() {
-        let template = paths.cwd.join("templates").join("janitor-dashboard.html");
-        if !template.is_file() {
-            bail!("Dashboard template not found: {}", template.display());
-        }
-        fs::copy(&template, &dashboard)?;
+        fs::write(&dashboard, EMBEDDED_TEMPLATE)?;
     }
 
     let inventory = inventory::build_inventory()?;
