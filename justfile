@@ -6,21 +6,25 @@ fmt:
 fmt-check:
     cargo fmt --all -- --check
 
+sync-rust-metadata:
+    cargo generate-lockfile
+    cargo test --test package_identity -- package_metadata_has_single_root_package --exact
+
 clippy:
-    cargo clippy --workspace --all-targets --all-features -- -D warnings
+    cargo clippy --all-targets --all-features -- -D warnings
 
 test:
-    cargo test --workspace --all-targets --all-features
+    cargo test --all-targets --all-features
 
 build:
-    cargo build --workspace
+    cargo build
 
 build-release:
     cargo build --release
 
 release-build: build-release
 
-ci: fmt-check clippy test build-release
+ci: sync-rust-metadata fmt-check clippy test build-release
 
 install-local:
     cargo install --path . --locked --force
