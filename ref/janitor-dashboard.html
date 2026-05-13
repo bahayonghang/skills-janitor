@@ -1,0 +1,3373 @@
+<!DOCTYPE html>
+<!-- skills-janitor dashboard template v2.0.0 -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skills Janitor Dashboard</title>
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --card: #fff;
+    --text: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --border: #e5e5e7;
+    --accent: #e8453c;
+    --accent-light: #fef0ef;
+    --green: #34c759;
+    --green-light: #edf9f0;
+    --blue: #007aff;
+    --blue-light: #eef4ff;
+    --orange: #ff9500;
+    --orange-light: #fff8ed;
+    --chart-line: #e8453c;
+    --chart-fill: rgba(232,69,60,0.08);
+    --chart-line2: #007aff;
+    --chart-fill2: rgba(0,122,255,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 2rem;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .header .meta {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+  }
+
+  .card-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-label.red { color: var(--accent); }
+  .card-label.green { color: var(--green); }
+  .card-label.blue { color: var(--blue); }
+  .card-label.orange { color: var(--orange); }
+
+  .big-number {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  .big-number span {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stat-item .label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+  }
+
+  .stat-item .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .stat-item .value.red { color: var(--accent); }
+  .stat-item .value.green { color: var(--green); }
+
+  .card-wide {
+    grid-column: 1 / -1;
+  }
+
+  .chart-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    margin-top: 1rem;
+  }
+
+  .chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+  }
+
+  th {
+    text-align: left;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  th.right, td.right { text-align: right; }
+
+  td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .badge-ok { background: var(--green-light); color: var(--green); }
+  .badge-warn { background: var(--orange-light); color: var(--orange); }
+  .badge-crit { background: var(--accent-light); color: var(--accent); }
+  .badge-info { background: var(--blue-light); color: var(--blue); }
+  .badge-plugin { background: #f3f0ff; color: #7c3aed; }
+
+  .bar-bg {
+    background: var(--border);
+    border-radius: 4px;
+    height: 6px;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+
+  .bar-fill.red { background: var(--accent); }
+  .bar-fill.green { background: var(--green); }
+  .bar-fill.blue { background: var(--blue); }
+
+  .snapshot-nav {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .snapshot-nav select {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .snapshot-nav .count {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  .footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .legend-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Skills Janitor</h1>
+  <div class="meta" id="headerMeta"></div>
+</div>
+
+<div class="snapshot-nav" id="snapshotNav" style="display:none">
+  <label>Snapshot:</label>
+  <select id="snapshotSelect" onchange="renderSnapshot(this.value)"></select>
+  <span class="count" id="snapshotCount"></span>
+</div>
+
+<div class="grid" id="topCards"></div>
+
+<div class="grid">
+  <div class="card card-wide" id="trendCard" style="display:none">
+    <div class="card-label blue">Weekly Skill Invocations</div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:var(--chart-line)"></span>Invocations</span>
+      <span><span class="legend-dot" style="background:var(--chart-line2)"></span>Active Skills</span>
+    </div>
+    <div class="chart-container"><canvas id="trendChart"></canvas></div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card card-wide" id="skillTableCard">
+    <div class="card-label">Skill Inventory</div>
+    <table id="skillTable"></table>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card" id="pluginCard">
+    <div class="card-label blue">Plugins</div>
+    <table id="pluginTable"></table>
+  </div>
+  <div class="card" id="lintCard">
+    <div class="card-label orange">Quality Issues</div>
+    <div id="lintContent"></div>
+  </div>
+</div>
+
+<div class="grid" id="historySection" style="display:none">
+  <div class="card card-wide">
+    <div class="card-label">Snapshot History</div>
+    <div class="legend" style="margin-bottom:0.5rem">
+      <span><span class="legend-dot" style="background:var(--chart-line)"></span>Tokens Wasted</span>
+      <span><span class="legend-dot" style="background:var(--chart-line2)"></span>Active Skills</span>
+    </div>
+    <div class="chart-container"><canvas id="historyChart"></canvas></div>
+  </div>
+</div>
+
+<div class="footer">
+  Made with &#9829; by Buzzwoo E-Com Kitchen | https://www.buzzwoo.de
+</div>
+
+<!-- Snapshot data storage - must be before main script -->
+<script type="application/json" id="snapshotData">[
+  {
+    "budget": 200000,
+    "duplicates": {
+      "description_overlaps": [],
+      "name_collisions": [],
+      "total_records": 64,
+      "unique_skill_files": 35
+    },
+    "lint": {
+      "issues": [
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\brainstorming",
+          "severity": "warning",
+          "skill": "brainstorming"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\brainstorming",
+          "severity": "info",
+          "skill": "brainstorming"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\brand-design-md",
+          "severity": "warning",
+          "skill": "brand-design-md"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\brand-design-md",
+          "severity": "info",
+          "skill": "brand-design-md"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\caveman",
+          "severity": "info",
+          "skill": "caveman"
+        },
+        {
+          "message": "Folder name 'darwin' doesn't match skill name 'darwin-skill'",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\darwin",
+          "severity": "info",
+          "skill": "darwin"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\darwin",
+          "severity": "info",
+          "skill": "darwin"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\diagnose",
+          "severity": "info",
+          "skill": "diagnose"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\find-skills",
+          "severity": "info",
+          "skill": "find-skills"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\frontend-design",
+          "severity": "info",
+          "skill": "frontend-design"
+        },
+        {
+          "message": "Description is long (523 chars) - consider trimming to \u003c 300",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\git-commit",
+          "severity": "info",
+          "skill": "git-commit"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\git-commit",
+          "severity": "info",
+          "skill": "git-commit"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\grill-me",
+          "severity": "info",
+          "skill": "grill-me"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\grill-with-docs",
+          "severity": "info",
+          "skill": "grill-with-docs"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\hunt",
+          "severity": "warning",
+          "skill": "hunt"
+        },
+        {
+          "message": "Description is long (895 chars) - consider trimming to \u003c 300",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\impeccable",
+          "severity": "info",
+          "skill": "impeccable"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\impeccable",
+          "severity": "info",
+          "skill": "impeccable"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\improve-codebase-architecture",
+          "severity": "info",
+          "skill": "improve-codebase-architecture"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\planning-with-files-zh",
+          "severity": "warning",
+          "skill": "planning-with-files-zh"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\planning-with-files-zh",
+          "severity": "info",
+          "skill": "planning-with-files-zh"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\prototype",
+          "severity": "info",
+          "skill": "prototype"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\read",
+          "severity": "warning",
+          "skill": "read"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\receiving-code-review",
+          "severity": "warning",
+          "skill": "receiving-code-review"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\receiving-code-review",
+          "severity": "info",
+          "skill": "receiving-code-review"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\requesting-code-review",
+          "severity": "warning",
+          "skill": "requesting-code-review"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\requesting-code-review",
+          "severity": "info",
+          "skill": "requesting-code-review"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\setup-matt-pocock-skills",
+          "severity": "warning",
+          "skill": "setup-matt-pocock-skills"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\setup-matt-pocock-skills",
+          "severity": "info",
+          "skill": "setup-matt-pocock-skills"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\tdd",
+          "severity": "info",
+          "skill": "tdd"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\think",
+          "severity": "warning",
+          "skill": "think"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\to-issues",
+          "severity": "info",
+          "skill": "to-issues"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\to-prd",
+          "severity": "info",
+          "skill": "to-prd"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\triage",
+          "severity": "info",
+          "skill": "triage"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\web-access",
+          "severity": "warning",
+          "skill": "web-access"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\web-access",
+          "severity": "info",
+          "skill": "web-access"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\write",
+          "severity": "warning",
+          "skill": "write"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\write-a-skill",
+          "severity": "info",
+          "skill": "write-a-skill"
+        },
+        {
+          "message": "Very little body content (1 non-empty lines)",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\zoom-out",
+          "severity": "warning",
+          "skill": "zoom-out"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\zoom-out",
+          "severity": "info",
+          "skill": "zoom-out"
+        },
+        {
+          "message": "Description is long (925 chars) - consider trimming to \u003c 300",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\agent-browser",
+          "severity": "info",
+          "skill": "agent-browser"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\agent-browser",
+          "severity": "info",
+          "skill": "agent-browser"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\brainstorming",
+          "severity": "warning",
+          "skill": "brainstorming"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\brainstorming",
+          "severity": "info",
+          "skill": "brainstorming"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\brand-design-md",
+          "severity": "warning",
+          "skill": "brand-design-md"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\brand-design-md",
+          "severity": "info",
+          "skill": "brand-design-md"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\caveman",
+          "severity": "info",
+          "skill": "caveman"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\diagnose",
+          "severity": "info",
+          "skill": "diagnose"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\find-skills",
+          "severity": "info",
+          "skill": "find-skills"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\frontend-design",
+          "severity": "info",
+          "skill": "frontend-design"
+        },
+        {
+          "message": "Description is long (523 chars) - consider trimming to \u003c 300",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\git-commit",
+          "severity": "info",
+          "skill": "git-commit"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\git-commit",
+          "severity": "info",
+          "skill": "git-commit"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\grill-me",
+          "severity": "info",
+          "skill": "grill-me"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\grill-with-docs",
+          "severity": "info",
+          "skill": "grill-with-docs"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\hunt",
+          "severity": "warning",
+          "skill": "hunt"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\improve-codebase-architecture",
+          "severity": "info",
+          "skill": "improve-codebase-architecture"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\planning-with-files-zh",
+          "severity": "warning",
+          "skill": "planning-with-files-zh"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\planning-with-files-zh",
+          "severity": "info",
+          "skill": "planning-with-files-zh"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\prototype",
+          "severity": "info",
+          "skill": "prototype"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\read",
+          "severity": "warning",
+          "skill": "read"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\receiving-code-review",
+          "severity": "warning",
+          "skill": "receiving-code-review"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\receiving-code-review",
+          "severity": "info",
+          "skill": "receiving-code-review"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\requesting-code-review",
+          "severity": "warning",
+          "skill": "requesting-code-review"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\requesting-code-review",
+          "severity": "info",
+          "skill": "requesting-code-review"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\setup-matt-pocock-skills",
+          "severity": "warning",
+          "skill": "setup-matt-pocock-skills"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\setup-matt-pocock-skills",
+          "severity": "info",
+          "skill": "setup-matt-pocock-skills"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\skill-creator",
+          "severity": "info",
+          "skill": "skill-creator"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\tdd",
+          "severity": "info",
+          "skill": "tdd"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\think",
+          "severity": "warning",
+          "skill": "think"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\to-issues",
+          "severity": "info",
+          "skill": "to-issues"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\to-prd",
+          "severity": "info",
+          "skill": "to-prd"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\triage",
+          "severity": "info",
+          "skill": "triage"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\web-access",
+          "severity": "warning",
+          "skill": "web-access"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\web-access",
+          "severity": "info",
+          "skill": "web-access"
+        },
+        {
+          "message": "Description doesn't explain when to trigger - add 'Use when...' or 'Also use when...'",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\write",
+          "severity": "warning",
+          "skill": "write"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\write-a-skill",
+          "severity": "info",
+          "skill": "write-a-skill"
+        },
+        {
+          "message": "Very little body content (1 non-empty lines)",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\zoom-out",
+          "severity": "warning",
+          "skill": "zoom-out"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\zoom-out",
+          "severity": "info",
+          "skill": "zoom-out"
+        },
+        {
+          "message": "No Gotchas section - consider adding common pitfalls",
+          "path": "D:\\Documents\\Code\\blank\\.claude\\skills\\janitor-audit",
+          "severity": "info",
+          "skill": "janitor-audit"
+        }
+      ],
+      "summary": {
+        "critical": 0,
+        "info": 54,
+        "total": 78,
+        "warnings": 24
+      }
+    },
+    "period_weeks": 52,
+    "scan": {
+      "broken_symlinks": 0,
+      "commands": [
+        {
+          "name": "agent-sort",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\agent-sort.md",
+          "scope": "user"
+        },
+        {
+          "name": "aside",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\aside.md",
+          "scope": "user"
+        },
+        {
+          "name": "build-fix",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\build-fix.md",
+          "scope": "user"
+        },
+        {
+          "name": "checkpoint",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\checkpoint.md",
+          "scope": "user"
+        },
+        {
+          "name": "claw",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\claw.md",
+          "scope": "user"
+        },
+        {
+          "name": "code-review",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\code-review.md",
+          "scope": "user"
+        },
+        {
+          "name": "context-budget",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\context-budget.md",
+          "scope": "user"
+        },
+        {
+          "name": "cpp-build",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\cpp-build.md",
+          "scope": "user"
+        },
+        {
+          "name": "cpp-review",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\cpp-review.md",
+          "scope": "user"
+        },
+        {
+          "name": "cpp-test",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\cpp-test.md",
+          "scope": "user"
+        },
+        {
+          "name": "devfleet",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\devfleet.md",
+          "scope": "user"
+        },
+        {
+          "name": "docs",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\docs.md",
+          "scope": "user"
+        },
+        {
+          "name": "e2e",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\e2e.md",
+          "scope": "user"
+        },
+        {
+          "name": "eval",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\eval.md",
+          "scope": "user"
+        },
+        {
+          "name": "evolve",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\evolve.md",
+          "scope": "user"
+        },
+        {
+          "name": "feature-dev",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\feature-dev.md",
+          "scope": "user"
+        },
+        {
+          "name": "flutter-build",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\flutter-build.md",
+          "scope": "user"
+        },
+        {
+          "name": "flutter-review",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\flutter-review.md",
+          "scope": "user"
+        },
+        {
+          "name": "flutter-test",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\flutter-test.md",
+          "scope": "user"
+        },
+        {
+          "name": "gan-build",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\gan-build.md",
+          "scope": "user"
+        },
+        {
+          "name": "gan-design",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\gan-design.md",
+          "scope": "user"
+        },
+        {
+          "name": "go-build",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\go-build.md",
+          "scope": "user"
+        },
+        {
+          "name": "go-review",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\go-review.md",
+          "scope": "user"
+        },
+        {
+          "name": "go-test",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\go-test.md",
+          "scope": "user"
+        },
+        {
+          "name": "gradle-build",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\gradle-build.md",
+          "scope": "user"
+        },
+        {
+          "name": "harness-audit",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\harness-audit.md",
+          "scope": "user"
+        },
+        {
+          "name": "hookify-configure",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\hookify-configure.md",
+          "scope": "user"
+        },
+        {
+          "name": "hookify-help",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\hookify-help.md",
+          "scope": "user"
+        },
+        {
+          "name": "hookify-list",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\hookify-list.md",
+          "scope": "user"
+        },
+        {
+          "name": "hookify",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\hookify.md",
+          "scope": "user"
+        },
+        {
+          "name": "instinct-export",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\instinct-export.md",
+          "scope": "user"
+        },
+        {
+          "name": "instinct-import",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\instinct-import.md",
+          "scope": "user"
+        },
+        {
+          "name": "instinct-status",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\instinct-status.md",
+          "scope": "user"
+        },
+        {
+          "name": "jira",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\jira.md",
+          "scope": "user"
+        },
+        {
+          "name": "kotlin-build",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\kotlin-build.md",
+          "scope": "user"
+        },
+        {
+          "name": "kotlin-review",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\kotlin-review.md",
+          "scope": "user"
+        },
+        {
+          "name": "kotlin-test",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\kotlin-test.md",
+          "scope": "user"
+        },
+        {
+          "name": "learn-eval",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\learn-eval.md",
+          "scope": "user"
+        },
+        {
+          "name": "learn",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\learn.md",
+          "scope": "user"
+        },
+        {
+          "name": "loop-start",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\loop-start.md",
+          "scope": "user"
+        },
+        {
+          "name": "loop-status",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\loop-status.md",
+          "scope": "user"
+        },
+        {
+          "name": "model-route",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\model-route.md",
+          "scope": "user"
+        },
+        {
+          "name": "multi-backend",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\multi-backend.md",
+          "scope": "user"
+        },
+        {
+          "name": "multi-execute",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\multi-execute.md",
+          "scope": "user"
+        },
+        {
+          "name": "multi-frontend",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\multi-frontend.md",
+          "scope": "user"
+        },
+        {
+          "name": "multi-plan",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\multi-plan.md",
+          "scope": "user"
+        },
+        {
+          "name": "multi-workflow",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\multi-workflow.md",
+          "scope": "user"
+        },
+        {
+          "name": "orchestrate",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\orchestrate.md",
+          "scope": "user"
+        },
+        {
+          "name": "plan",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\plan.md",
+          "scope": "user"
+        },
+        {
+          "name": "pm2",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\pm2.md",
+          "scope": "user"
+        },
+        {
+          "name": "projects",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\projects.md",
+          "scope": "user"
+        },
+        {
+          "name": "promote",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\promote.md",
+          "scope": "user"
+        },
+        {
+          "name": "prompt-optimize",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\prompt-optimize.md",
+          "scope": "user"
+        },
+        {
+          "name": "prp-commit",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\prp-commit.md",
+          "scope": "user"
+        },
+        {
+          "name": "prp-implement",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\prp-implement.md",
+          "scope": "user"
+        },
+        {
+          "name": "prp-plan",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\prp-plan.md",
+          "scope": "user"
+        },
+        {
+          "name": "prp-pr",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\prp-pr.md",
+          "scope": "user"
+        },
+        {
+          "name": "prp-prd",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\prp-prd.md",
+          "scope": "user"
+        },
+        {
+          "name": "prune",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\prune.md",
+          "scope": "user"
+        },
+        {
+          "name": "python-review",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\python-review.md",
+          "scope": "user"
+        },
+        {
+          "name": "quality-gate",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\quality-gate.md",
+          "scope": "user"
+        },
+        {
+          "name": "refactor-clean",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\refactor-clean.md",
+          "scope": "user"
+        },
+        {
+          "name": "resume-session",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\resume-session.md",
+          "scope": "user"
+        },
+        {
+          "name": "review-pr",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\review-pr.md",
+          "scope": "user"
+        },
+        {
+          "name": "rules-distill",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\rules-distill.md",
+          "scope": "user"
+        },
+        {
+          "name": "rust-build",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\rust-build.md",
+          "scope": "user"
+        },
+        {
+          "name": "rust-review",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\rust-review.md",
+          "scope": "user"
+        },
+        {
+          "name": "rust-test",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\rust-test.md",
+          "scope": "user"
+        },
+        {
+          "name": "santa-loop",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\santa-loop.md",
+          "scope": "user"
+        },
+        {
+          "name": "save-session",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\save-session.md",
+          "scope": "user"
+        },
+        {
+          "name": "sessions",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\sessions.md",
+          "scope": "user"
+        },
+        {
+          "name": "setup-pm",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\setup-pm.md",
+          "scope": "user"
+        },
+        {
+          "name": "skill-create",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\skill-create.md",
+          "scope": "user"
+        },
+        {
+          "name": "skill-health",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\skill-health.md",
+          "scope": "user"
+        },
+        {
+          "name": "tdd",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\tdd.md",
+          "scope": "user"
+        },
+        {
+          "name": "test-coverage",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\test-coverage.md",
+          "scope": "user"
+        },
+        {
+          "name": "update-codemaps",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\update-codemaps.md",
+          "scope": "user"
+        },
+        {
+          "name": "update-docs",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\update-docs.md",
+          "scope": "user"
+        },
+        {
+          "name": "verify",
+          "path": "C:\\Users\\lyh\\.claude\\commands\\verify.md",
+          "scope": "user"
+        }
+      ],
+      "plugins": [
+        {
+          "name": "andrej-karpathy-skills",
+          "scope": "user",
+          "source": "karpathy-skills",
+          "version": "1.0.0"
+        },
+        {
+          "name": "code-simplifier",
+          "scope": "user",
+          "source": "claude-plugins-official",
+          "version": "1.0.0"
+        },
+        {
+          "name": "codex",
+          "scope": "user",
+          "source": "openai-codex",
+          "version": "1.0.4"
+        },
+        {
+          "name": "context7",
+          "scope": "user",
+          "source": "claude-plugins-official",
+          "version": "unknown"
+        },
+        {
+          "name": "frontend-design",
+          "scope": "user",
+          "source": "claude-plugins-official",
+          "version": "unknown"
+        },
+        {
+          "name": "oh-my-claudecode",
+          "scope": "user",
+          "source": "omc",
+          "version": "4.13.7"
+        },
+        {
+          "name": "playwright",
+          "scope": "user",
+          "source": "claude-plugins-official",
+          "version": "unknown"
+        },
+        {
+          "name": "pyright-lsp",
+          "scope": "user",
+          "source": "claude-plugins-official",
+          "version": "1.0.0"
+        },
+        {
+          "name": "rust-analyzer-lsp",
+          "scope": "project",
+          "source": "claude-plugins-official",
+          "version": "1.0.0"
+        },
+        {
+          "name": "rust-analyzer-lsp",
+          "scope": "user",
+          "source": "claude-plugins-official",
+          "version": "1.0.0"
+        },
+        {
+          "name": "skill-creator",
+          "scope": "user",
+          "source": "claude-plugins-official",
+          "version": "unknown"
+        },
+        {
+          "name": "superpowers",
+          "scope": "user",
+          "source": "claude-plugins-official",
+          "version": "5.1.0"
+        },
+        {
+          "name": "typescript-lsp",
+          "scope": "user",
+          "source": "claude-plugins-official",
+          "version": "1.0.0"
+        }
+      ],
+      "scan_date": "2026-05-12T09:03:36.5696046Z",
+      "skills": [
+        {
+          "description": "在任何创造性工作之前必须使用此技能——创建功能、构建组件、添加功能或修改行为。在实现之前先探索用户意图、需求和设计。",
+          "extra_files": 7,
+          "folder": "brainstorming",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 164,
+          "name": "brainstorming",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\brainstorming",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\brainstorming",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\brainstorming",
+          "version": ""
+        },
+        {
+          "description": "当用户明确点名真实品牌、产品或媒体站点的视觉语言，并希望先从 getdesign.md 拉取结构化设计规范，再据此生成或改造 UI 代码时使用。适用于“做成 Apple/Stripe/Notion/WIRED 的感觉”“参考某品牌官网风格做页面”“把现有 React 组件改成 Vercel 风格”这类请求，即使用户没提 getdesign.md 也应优先触发。不要用于泛化的“更现代一点”、logo 设计、图片/海报生成、幻灯片换皮、图表/流程图或纯设计分析。",
+          "extra_files": 5,
+          "folder": "brand-design-md",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 171,
+          "name": "brand-design-md",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\brand-design-md",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\brand-design-md",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\brand-design-md",
+          "version": "1.1.0"
+        },
+        {
+          "description": "Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Use when user says \"caveman mode\", \"talk like caveman\", \"use caveman\", \"less tokens\", \"be brief\", or invokes /caveman.",
+          "extra_files": 0,
+          "folder": "caveman",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 49,
+          "name": "caveman",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\caveman",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\caveman",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\caveman",
+          "version": ""
+        },
+        {
+          "description": "Reviews code diffs and release-ready changes after implementation, executes approved implementation plans, extracts project-specific constraints from repository context, auto-fixes safe issues, and drives approved release, publish, push, release-reaction, and issue/PR follow-through. Also triages issues and PRs when the user mentions them. Not for exploring ideas, debugging, or document prose review.",
+          "extra_files": 5,
+          "folder": "check",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 209,
+          "name": "check",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\check",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\check",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\check",
+          "version": "3.23.0"
+        },
+        {
+          "description": "Darwin Skill (达尔文.skill): autonomous skill optimizer inspired by Karpathy's autoresearch. Evaluates SKILL.md files using an 8-dimension rubric (structure + effectiveness), runs hill-climbing with git version control, validates improvements through test prompts, and generates visual result cards. Use when user mentions \\\"优化skill\\\", \\\"skill评分\\\", \\\"自动优化\\\", \\\"auto optimize\\\", \\\"skill质量检查\\\", \\\"达尔文\\\", \\\"darwin\\\", \\\"帮我改改skill\\\", \\\"skill怎么样\\\", \\\"提升skill质量\\\", \\\"skill review\\\", \\\"skill打分\\\".",
+          "extra_files": 3,
+          "folder": "darwin",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 401,
+          "name": "darwin-skill",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\darwin",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\darwin",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\darwin",
+          "version": ""
+        },
+        {
+          "description": "Produces distinctive, production-grade UI for any component, page, or visual interface. Handles screenshot-driven iteration when the user sends an image with a visual complaint. Not for backend logic or data pipelines.",
+          "extra_files": 5,
+          "folder": "design",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 136,
+          "name": "design",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\design",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\design",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\design",
+          "version": "3.20.0"
+        },
+        {
+          "description": "Disciplined diagnosis loop for hard bugs and performance regressions. Reproduce → minimise → hypothesise → instrument → fix → regression-test. Use when user says \"diagnose this\" / \"debug this\", reports a bug, says something is broken/throwing/failing, or describes a performance regression.",
+          "extra_files": 1,
+          "folder": "diagnose",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 117,
+          "name": "diagnose",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\diagnose",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\diagnose",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\diagnose",
+          "version": ""
+        },
+        {
+          "description": "Helps users discover and install agent skills when they ask questions like \"how do I do X\", \"find a skill for X\", \"is there a skill that can...\", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.",
+          "extra_files": 0,
+          "folder": "find-skills",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 142,
+          "name": "find-skills",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\find-skills",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\find-skills",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\find-skills",
+          "version": ""
+        },
+        {
+          "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.",
+          "extra_files": 1,
+          "folder": "frontend-design",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 42,
+          "name": "frontend-design",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\frontend-design",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\frontend-design",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\frontend-design",
+          "version": ""
+        },
+        {
+          "description": "Safely orchestrate Conventional Commits for staged Git changes, or for all working-tree changes when the user explicitly asks to include everything. Use when the user asks to write a commit message, split staged changes, split all changes, commit everything regardless of stage state, include untracked files in the commit set, organize a messy index before committing, or generate structured commit text without pushing by default. Default to English. Switch to Chinese only when the user explicitly says `请使用中文拆分提交所有的改动`.",
+          "extra_files": 8,
+          "folder": "git-commit",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 110,
+          "name": "git-commit",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\git-commit",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\git-commit",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\git-commit",
+          "version": "1.5.0"
+        },
+        {
+          "description": "Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test a plan, get grilled on their design, or mentions \"grill me\".",
+          "extra_files": 0,
+          "folder": "grill-me",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 10,
+          "name": "grill-me",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\grill-me",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\grill-me",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\grill-me",
+          "version": ""
+        },
+        {
+          "description": "Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise. Use when user wants to stress-test a plan against their project's language and documented decisions.",
+          "extra_files": 2,
+          "folder": "grill-with-docs",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 88,
+          "name": "grill-with-docs",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\grill-with-docs",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\grill-with-docs",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\grill-with-docs",
+          "version": ""
+        },
+        {
+          "description": "Runs a budget-aware audit of the Claude Code config stack when Claude ignores instructions, behaves inconsistently, hooks malfunction, MCP servers need auditing, or users ask why /health used many tokens. Flags issues by severity. Not for debugging code or reviewing PRs.",
+          "extra_files": 3,
+          "folder": "health",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 141,
+          "name": "health",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\health",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\health",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\health",
+          "version": "3.18.0"
+        },
+        {
+          "description": "Finds root cause of errors, crashes, regressions, screenshot-reported defects, unexpected behavior, and failing tests before applying any fix. Not for code review or new features.",
+          "extra_files": 3,
+          "folder": "hunt",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 166,
+          "name": "hunt",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\hunt",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\hunt",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\hunt",
+          "version": "3.20.0"
+        },
+        {
+          "description": "Use when the user wants to design, redesign, shape, critique, audit, polish, clarify, distill, harden, optimize, adapt, animate, colorize, extract, or otherwise improve a frontend interface. Covers websites, landing pages, dashboards, product UI, app shells, components, forms, settings, onboarding, and empty states. Handles UX review, visual hierarchy, information architecture, cognitive load, accessibility, performance, responsive behavior, theming, anti-patterns, typography, fonts, spacing, layout, alignment, color, motion, micro-interactions, UX copy, error states, edge cases, i18n, and reusable design systems or tokens. Also use for bland designs that need to become bolder or more delightful, loud designs that should become quieter, live browser iteration on UI elements, or ambitious visual effects that should feel technically extraordinary. Not for backend-only or non-UI tasks.",
+          "extra_files": 58,
+          "folder": "impeccable",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 176,
+          "name": "impeccable",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\impeccable",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\impeccable",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\impeccable",
+          "version": ""
+        },
+        {
+          "description": "Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and AI-navigable.",
+          "extra_files": 3,
+          "folder": "improve-codebase-architecture",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 71,
+          "name": "improve-codebase-architecture",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\improve-codebase-architecture",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\improve-codebase-architecture",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\improve-codebase-architecture",
+          "version": ""
+        },
+        {
+          "description": "基于 Manus 风格的文件规划系统，用于组织和跟踪复杂任务的进度。创建 task_plan.md、findings.md 和 progress.md 三个文件。当用户要求规划、拆解或组织多步骤项目、研究任务或需要超过5次工具调用的工作时使用。支持 /clear 后的自动会话恢复。触发词：任务规划、项目计划、制定计划、分解任务、多步骤规划、进度跟踪、文件规划、帮我规划、拆解项目",
+          "extra_files": 8,
+          "folder": "planning-with-files-zh",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 238,
+          "name": "planning-with-files-zh",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\planning-with-files-zh",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\planning-with-files-zh",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\planning-with-files-zh",
+          "version": ""
+        },
+        {
+          "description": "Build a throwaway prototype to flush out a design before committing to it. Routes between two branches — a runnable terminal app for state/business-logic questions, or several radically different UI variations toggleable from one route. Use when the user wants to prototype, sanity-check a data model or state machine, mock up a UI, explore design options, or says \"prototype this\", \"let me play with it\", \"try a few designs\".",
+          "extra_files": 2,
+          "folder": "prototype",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 30,
+          "name": "prototype",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\prototype",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\prototype",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\prototype",
+          "version": ""
+        },
+        {
+          "description": "Fetches any URL or PDF as clean Markdown for reading, quoting, citation, or downstream work. Handles paywalls, JS-heavy pages, X/Twitter, and Chinese platforms via proxy cascade. Not for local text files already in the repo.",
+          "extra_files": 5,
+          "folder": "read",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 96,
+          "name": "read",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\read",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\read",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\read",
+          "version": "3.14.0"
+        },
+        {
+          "description": "收到代码审查反馈后、实施建议之前使用，尤其当反馈不明确或技术上有疑问时——需要技术严谨性和验证，而非敷衍附和或盲目执行",
+          "extra_files": 0,
+          "folder": "receiving-code-review",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 213,
+          "name": "receiving-code-review",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\receiving-code-review",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\receiving-code-review",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\receiving-code-review",
+          "version": ""
+        },
+        {
+          "description": "完成任务、实现重要功能或合并前使用，用于验证工作成果是否符合要求",
+          "extra_files": 1,
+          "folder": "requesting-code-review",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 105,
+          "name": "requesting-code-review",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\requesting-code-review",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\requesting-code-review",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\requesting-code-review",
+          "version": ""
+        },
+        {
+          "description": "Sets up an `## Agent skills` block in AGENTS.md/CLAUDE.md and `docs/agents/` so the engineering skills know this repo's issue tracker (GitHub or local markdown), triage label vocabulary, and domain doc layout. Run before first use of `to-issues`, `to-prd`, `triage`, `diagnose`, `tdd`, `improve-codebase-architecture`, or `zoom-out` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.",
+          "extra_files": 5,
+          "folder": "setup-matt-pocock-skills",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 121,
+          "name": "setup-matt-pocock-skills",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\setup-matt-pocock-skills",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\setup-matt-pocock-skills",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\setup-matt-pocock-skills",
+          "version": ""
+        },
+        {
+          "description": "Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions \"red-green-refactor\", wants integration tests, or asks for test-first development.",
+          "extra_files": 5,
+          "folder": "tdd",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 109,
+          "name": "tdd",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\tdd",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\tdd",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\tdd",
+          "version": ""
+        },
+        {
+          "description": "Turns rough ideas into approved, decision-complete plans with validated structure before writing code. Covers new features, architecture decisions, and value judgments about whether to build, keep, or remove something. Not for bug fixes or small edits.",
+          "extra_files": 0,
+          "folder": "think",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 143,
+          "name": "think",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\think",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\think",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\think",
+          "version": "3.18.0"
+        },
+        {
+          "description": "Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices. Use when user wants to convert a plan into issues, create implementation tickets, or break down work into issues.",
+          "extra_files": 0,
+          "folder": "to-issues",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 83,
+          "name": "to-issues",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\to-issues",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\to-issues",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\to-issues",
+          "version": ""
+        },
+        {
+          "description": "Turn the current conversation context into a PRD and publish it to the project issue tracker. Use when user wants to create a PRD from the current context.",
+          "extra_files": 0,
+          "folder": "to-prd",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 76,
+          "name": "to-prd",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\to-prd",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\to-prd",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\to-prd",
+          "version": ""
+        },
+        {
+          "description": "Triage issues through a state machine driven by triage roles. Use when user wants to create an issue, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow.",
+          "extra_files": 2,
+          "folder": "triage",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 103,
+          "name": "triage",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\triage",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\triage",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\triage",
+          "version": ""
+        },
+        {
+          "description": "所有联网操作必须通过此 skill 处理，包括：搜索、网页抓取、登录后操作、网络交互等。 触发场景：用户要求搜索信息、查看网页内容、访问需要登录的网站、操作网页界面、抓取社交媒体内容（小红书、微博、推特等）、读取动态渲染页面、以及任何需要真实浏览器环境的网络任务。",
+          "extra_files": 2,
+          "folder": "web-access",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 256,
+          "name": "web-access",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\web-access",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\web-access",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\web-access",
+          "version": "2.5.0"
+        },
+        {
+          "description": "Strips AI writing patterns and rewrites prose to sound natural in Chinese or English. Only activates on explicit writing or editing requests. Not for code comments, commit messages, or inline docs.",
+          "extra_files": 5,
+          "folder": "write",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 127,
+          "name": "write",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\write",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\write",
+          "scope": "user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\write",
+          "version": "3.20.0"
+        },
+        {
+          "description": "Create new agent skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, or build a new skill.",
+          "extra_files": 0,
+          "folder": "write-a-skill",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 117,
+          "name": "write-a-skill",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\write-a-skill",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\write-a-skill",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\write-a-skill",
+          "version": ""
+        },
+        {
+          "description": "Tell the agent to zoom out and give broader context or a higher-level perspective. Use when you're unfamiliar with a section of code or need to understand how it fits into the bigger picture.",
+          "extra_files": 0,
+          "folder": "zoom-out",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 7,
+          "name": "zoom-out",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\zoom-out",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\zoom-out",
+          "scope": "user",
+          "symlink_target": "C:\\Users\\lyh\\.agents\\skills\\zoom-out",
+          "version": ""
+        },
+        {
+          "description": "Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to \"open a website\", \"fill out a form\", \"click a button\", \"take a screenshot\", \"scrape data from a page\", \"test this web app\", \"login to a site\", \"automate browser actions\", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.",
+          "extra_files": 0,
+          "folder": "agent-browser",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 51,
+          "name": "agent-browser",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\agent-browser",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\agent-browser",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "在任何创造性工作之前必须使用此技能——创建功能、构建组件、添加功能或修改行为。在实现之前先探索用户意图、需求和设计。",
+          "extra_files": 7,
+          "folder": "brainstorming",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 164,
+          "name": "brainstorming",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\brainstorming",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\brainstorming",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\brainstorming",
+          "version": ""
+        },
+        {
+          "description": "当用户明确点名真实品牌、产品或媒体站点的视觉语言，并希望先从 getdesign.md 拉取结构化设计规范，再据此生成或改造 UI 代码时使用。适用于“做成 Apple/Stripe/Notion/WIRED 的感觉”“参考某品牌官网风格做页面”“把现有 React 组件改成 Vercel 风格”这类请求，即使用户没提 getdesign.md 也应优先触发。不要用于泛化的“更现代一点”、logo 设计、图片/海报生成、幻灯片换皮、图表/流程图或纯设计分析。",
+          "extra_files": 5,
+          "folder": "brand-design-md",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 171,
+          "name": "brand-design-md",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\brand-design-md",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\brand-design-md",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\brand-design-md",
+          "version": "1.1.0"
+        },
+        {
+          "description": "Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Use when user says \"caveman mode\", \"talk like caveman\", \"use caveman\", \"less tokens\", \"be brief\", or invokes /caveman.",
+          "extra_files": 0,
+          "folder": "caveman",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 49,
+          "name": "caveman",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\caveman",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\caveman",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "Reviews code diffs and release-ready changes after implementation, executes approved implementation plans, extracts project-specific constraints from repository context, auto-fixes safe issues, and drives approved release, publish, push, release-reaction, and issue/PR follow-through. Also triages issues and PRs when the user mentions them. Not for exploring ideas, debugging, or document prose review.",
+          "extra_files": 5,
+          "folder": "check",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 209,
+          "name": "check",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\check",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\check",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\check",
+          "version": "3.23.0"
+        },
+        {
+          "description": "Produces distinctive, production-grade UI for any component, page, or visual interface. Handles screenshot-driven iteration when the user sends an image with a visual complaint. Not for backend logic or data pipelines.",
+          "extra_files": 5,
+          "folder": "design",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 136,
+          "name": "design",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\design",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\design",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\design",
+          "version": "3.20.0"
+        },
+        {
+          "description": "Disciplined diagnosis loop for hard bugs and performance regressions. Reproduce → minimise → hypothesise → instrument → fix → regression-test. Use when user says \"diagnose this\" / \"debug this\", reports a bug, says something is broken/throwing/failing, or describes a performance regression.",
+          "extra_files": 1,
+          "folder": "diagnose",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 117,
+          "name": "diagnose",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\diagnose",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\diagnose",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "Helps users discover and install agent skills when they ask questions like \"how do I do X\", \"find a skill for X\", \"is there a skill that can...\", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.",
+          "extra_files": 0,
+          "folder": "find-skills",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 142,
+          "name": "find-skills",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\find-skills",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\find-skills",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.",
+          "extra_files": 1,
+          "folder": "frontend-design",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 42,
+          "name": "frontend-design",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\frontend-design",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\frontend-design",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\frontend-design",
+          "version": ""
+        },
+        {
+          "description": "Safely orchestrate Conventional Commits for staged Git changes, or for all working-tree changes when the user explicitly asks to include everything. Use when the user asks to write a commit message, split staged changes, split all changes, commit everything regardless of stage state, include untracked files in the commit set, organize a messy index before committing, or generate structured commit text without pushing by default. Default to English. Switch to Chinese only when the user explicitly says `请使用中文拆分提交所有的改动`.",
+          "extra_files": 8,
+          "folder": "git-commit",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 110,
+          "name": "git-commit",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\git-commit",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\git-commit",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\git-commit",
+          "version": "1.5.0"
+        },
+        {
+          "description": "Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test a plan, get grilled on their design, or mentions \"grill me\".",
+          "extra_files": 0,
+          "folder": "grill-me",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 10,
+          "name": "grill-me",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\grill-me",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\grill-me",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise. Use when user wants to stress-test a plan against their project's language and documented decisions.",
+          "extra_files": 2,
+          "folder": "grill-with-docs",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 88,
+          "name": "grill-with-docs",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\grill-with-docs",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\grill-with-docs",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "Runs a budget-aware audit of the Claude Code config stack when Claude ignores instructions, behaves inconsistently, hooks malfunction, MCP servers need auditing, or users ask why /health used many tokens. Flags issues by severity. Not for debugging code or reviewing PRs.",
+          "extra_files": 3,
+          "folder": "health",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 141,
+          "name": "health",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\health",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\health",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\health",
+          "version": "3.18.0"
+        },
+        {
+          "description": "Finds root cause of errors, crashes, regressions, screenshot-reported defects, unexpected behavior, and failing tests before applying any fix. Not for code review or new features.",
+          "extra_files": 3,
+          "folder": "hunt",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 166,
+          "name": "hunt",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\hunt",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\hunt",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\hunt",
+          "version": "3.20.0"
+        },
+        {
+          "description": "Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and AI-navigable.",
+          "extra_files": 3,
+          "folder": "improve-codebase-architecture",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 71,
+          "name": "improve-codebase-architecture",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\improve-codebase-architecture",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\improve-codebase-architecture",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "基于 Manus 风格的文件规划系统，用于组织和跟踪复杂任务的进度。创建 task_plan.md、findings.md 和 progress.md 三个文件。当用户要求规划、拆解或组织多步骤项目、研究任务或需要超过5次工具调用的工作时使用。支持 /clear 后的自动会话恢复。触发词：任务规划、项目计划、制定计划、分解任务、多步骤规划、进度跟踪、文件规划、帮我规划、拆解项目",
+          "extra_files": 8,
+          "folder": "planning-with-files-zh",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 238,
+          "name": "planning-with-files-zh",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\planning-with-files-zh",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\planning-with-files-zh",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\planning-with-files-zh",
+          "version": ""
+        },
+        {
+          "description": "Build a throwaway prototype to flush out a design before committing to it. Routes between two branches — a runnable terminal app for state/business-logic questions, or several radically different UI variations toggleable from one route. Use when the user wants to prototype, sanity-check a data model or state machine, mock up a UI, explore design options, or says \"prototype this\", \"let me play with it\", \"try a few designs\".",
+          "extra_files": 2,
+          "folder": "prototype",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 30,
+          "name": "prototype",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\prototype",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\prototype",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "Use when the user explicitly requests PUA mode or signals frustration, repeated failures (2+), passive behavior, quality complaints, unverified completion, giving up, or asks to try harder/change approach. Common triggers: 'try harder', 'figure it out', 'stop giving up', 'you keep failing', '加油', '别偷懒', '你再试试', '为什么还不行', '你怎么又失败了', '又错了', '质量太差', '换个方法', 'stop spinning', 'you broke it', '/pua', 'PUA模式'. Do not trigger for normal first-attempt coding or information requests.",
+          "extra_files": 26,
+          "folder": "pua",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 378,
+          "name": "pua",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\pua",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\pua",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\pua",
+          "version": ""
+        },
+        {
+          "description": "Fetches any URL or PDF as clean Markdown for reading, quoting, citation, or downstream work. Handles paywalls, JS-heavy pages, X/Twitter, and Chinese platforms via proxy cascade. Not for local text files already in the repo.",
+          "extra_files": 5,
+          "folder": "read",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 96,
+          "name": "read",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\read",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\read",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\read",
+          "version": "3.14.0"
+        },
+        {
+          "description": "收到代码审查反馈后、实施建议之前使用，尤其当反馈不明确或技术上有疑问时——需要技术严谨性和验证，而非敷衍附和或盲目执行",
+          "extra_files": 0,
+          "folder": "receiving-code-review",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 213,
+          "name": "receiving-code-review",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\receiving-code-review",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\receiving-code-review",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\receiving-code-review",
+          "version": ""
+        },
+        {
+          "description": "完成任务、实现重要功能或合并前使用，用于验证工作成果是否符合要求",
+          "extra_files": 1,
+          "folder": "requesting-code-review",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 105,
+          "name": "requesting-code-review",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\requesting-code-review",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\requesting-code-review",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\requesting-code-review",
+          "version": ""
+        },
+        {
+          "description": "Sets up an `## Agent skills` block in AGENTS.md/CLAUDE.md and `docs/agents/` so the engineering skills know this repo's issue tracker (GitHub or local markdown), triage label vocabulary, and domain doc layout. Run before first use of `to-issues`, `to-prd`, `triage`, `diagnose`, `tdd`, `improve-codebase-architecture`, or `zoom-out` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.",
+          "extra_files": 5,
+          "folder": "setup-matt-pocock-skills",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 121,
+          "name": "setup-matt-pocock-skills",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\setup-matt-pocock-skills",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\setup-matt-pocock-skills",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.",
+          "extra_files": 17,
+          "folder": "skill-creator",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 485,
+          "name": "skill-creator",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\skill-creator",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\skill-creator",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\skill-creator",
+          "version": ""
+        },
+        {
+          "description": "Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions \"red-green-refactor\", wants integration tests, or asks for test-first development.",
+          "extra_files": 5,
+          "folder": "tdd",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 109,
+          "name": "tdd",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\tdd",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\tdd",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "Turns rough ideas into approved, decision-complete plans with validated structure before writing code. Covers new features, architecture decisions, and value judgments about whether to build, keep, or remove something. Not for bug fixes or small edits.",
+          "extra_files": 0,
+          "folder": "think",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 143,
+          "name": "think",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\think",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\think",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\think",
+          "version": "3.18.0"
+        },
+        {
+          "description": "Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices. Use when user wants to convert a plan into issues, create implementation tickets, or break down work into issues.",
+          "extra_files": 0,
+          "folder": "to-issues",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 83,
+          "name": "to-issues",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\to-issues",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\to-issues",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "Turn the current conversation context into a PRD and publish it to the project issue tracker. Use when user wants to create a PRD from the current context.",
+          "extra_files": 0,
+          "folder": "to-prd",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 76,
+          "name": "to-prd",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\to-prd",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\to-prd",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "Triage issues through a state machine driven by triage roles. Use when user wants to create an issue, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow.",
+          "extra_files": 2,
+          "folder": "triage",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 103,
+          "name": "triage",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\triage",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\triage",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "所有联网操作必须通过此 skill 处理，包括：搜索、网页抓取、登录后操作、网络交互等。 触发场景：用户要求搜索信息、查看网页内容、访问需要登录的网站、操作网页界面、抓取社交媒体内容（小红书、微博、推特等）、读取动态渲染页面、以及任何需要真实浏览器环境的网络任务。",
+          "extra_files": 2,
+          "folder": "web-access",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 256,
+          "name": "web-access",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\web-access",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\web-access",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\web-access",
+          "version": "2.5.0"
+        },
+        {
+          "description": "Strips AI writing patterns and rewrites prose to sound natural in Chinese or English. Only activates on explicit writing or editing requests. Not for code comments, commit messages, or inline docs.",
+          "extra_files": 5,
+          "folder": "write",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 127,
+          "name": "write",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\write",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\write",
+          "scope": "codex-user",
+          "symlink_target": "..\\..\\.skillsmanage\\skills\\write",
+          "version": "3.20.0"
+        },
+        {
+          "description": "Create new agent skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, or build a new skill.",
+          "extra_files": 0,
+          "folder": "write-a-skill",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 117,
+          "name": "write-a-skill",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\write-a-skill",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\write-a-skill",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "Tell the agent to zoom out and give broader context or a higher-level perspective. Use when you're unfamiliar with a section of code or need to understand how it fits into the bigger picture.",
+          "extra_files": 0,
+          "folder": "zoom-out",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": false,
+          "line_count": 7,
+          "name": "zoom-out",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\zoom-out",
+          "platform": "codex",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.agents\\skills\\zoom-out",
+          "scope": "codex-user",
+          "symlink_target": "",
+          "version": ""
+        },
+        {
+          "description": "Show all your installed skills. Use when the user asks for a skill inventory, skill list, or wants to audit what's installed.",
+          "extra_files": 0,
+          "folder": "janitor-audit",
+          "has_body": true,
+          "has_frontmatter": true,
+          "has_skill_file": true,
+          "is_symlink": true,
+          "line_count": 82,
+          "name": "janitor-audit",
+          "path": "D:\\Documents\\Code\\blank\\.claude\\skills\\janitor-audit",
+          "platform": "claude",
+          "real_path": "\\\\?\\C:\\Users\\lyh\\.skillsmanage\\skills\\janitor-audit",
+          "scope": "project",
+          "symlink_target": "C:\\Users\\lyh\\.skillsmanage\\skills\\janitor-audit",
+          "version": "2.0.0"
+        }
+      ]
+    },
+    "schema_version": 2,
+    "timestamp": "2026-05-12T09:03:36.67878Z",
+    "tokens": {
+      "budget": 200000,
+      "skills": [
+        {
+          "budget_percent": 4.1,
+          "name": "skill-creator",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\skill-creator",
+          "scope": "codex-user",
+          "tokens": 8247,
+          "used": true
+        },
+        {
+          "budget_percent": 2.1,
+          "name": "pua",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\pua",
+          "scope": "codex-user",
+          "tokens": 4115,
+          "used": true
+        },
+        {
+          "budget_percent": 2.0,
+          "name": "check",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\check",
+          "scope": "user",
+          "tokens": 3988,
+          "used": true
+        },
+        {
+          "budget_percent": 1.7,
+          "name": "impeccable",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\impeccable",
+          "scope": "user",
+          "tokens": 3426,
+          "used": true
+        },
+        {
+          "budget_percent": 1.5,
+          "name": "design",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\design",
+          "scope": "user",
+          "tokens": 2968,
+          "used": true
+        },
+        {
+          "budget_percent": 1.4,
+          "name": "hunt",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\hunt",
+          "scope": "user",
+          "tokens": 2798,
+          "used": true
+        },
+        {
+          "budget_percent": 1.3,
+          "name": "darwin",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\darwin",
+          "scope": "user",
+          "tokens": 2516,
+          "used": true
+        },
+        {
+          "budget_percent": 1.3,
+          "name": "think",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\think",
+          "scope": "user",
+          "tokens": 2511,
+          "used": true
+        },
+        {
+          "budget_percent": 1.2,
+          "name": "health",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\health",
+          "scope": "user",
+          "tokens": 2420,
+          "used": true
+        },
+        {
+          "budget_percent": 1.0,
+          "name": "web-access",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\web-access",
+          "scope": "user",
+          "tokens": 2064,
+          "used": true
+        },
+        {
+          "budget_percent": 1.0,
+          "name": "git-commit",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\git-commit",
+          "scope": "user",
+          "tokens": 1996,
+          "used": true
+        },
+        {
+          "budget_percent": 1.0,
+          "name": "write",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\write",
+          "scope": "user",
+          "tokens": 1982,
+          "used": true
+        },
+        {
+          "budget_percent": 0.9,
+          "name": "diagnose",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\diagnose",
+          "scope": "user",
+          "tokens": 1809,
+          "used": true
+        },
+        {
+          "budget_percent": 0.9,
+          "name": "setup-matt-pocock-skills",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\setup-matt-pocock-skills",
+          "scope": "user",
+          "tokens": 1729,
+          "used": true
+        },
+        {
+          "budget_percent": 0.7,
+          "name": "planning-with-files-zh",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\planning-with-files-zh",
+          "scope": "user",
+          "tokens": 1373,
+          "used": true
+        },
+        {
+          "budget_percent": 0.7,
+          "name": "find-skills",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\find-skills",
+          "scope": "user",
+          "tokens": 1358,
+          "used": true
+        },
+        {
+          "budget_percent": 0.6,
+          "name": "improve-codebase-architecture",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\improve-codebase-architecture",
+          "scope": "user",
+          "tokens": 1292,
+          "used": true
+        },
+        {
+          "budget_percent": 0.6,
+          "name": "triage",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\triage",
+          "scope": "user",
+          "tokens": 1236,
+          "used": true
+        },
+        {
+          "budget_percent": 0.6,
+          "name": "read",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\read",
+          "scope": "user",
+          "tokens": 1168,
+          "used": true
+        },
+        {
+          "budget_percent": 0.6,
+          "name": "tdd",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\tdd",
+          "scope": "user",
+          "tokens": 1120,
+          "used": true
+        },
+        {
+          "budget_percent": 0.6,
+          "name": "brainstorming",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\brainstorming",
+          "scope": "user",
+          "tokens": 1115,
+          "used": true
+        },
+        {
+          "budget_percent": 0.6,
+          "name": "frontend-design",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\frontend-design",
+          "scope": "user",
+          "tokens": 1110,
+          "used": true
+        },
+        {
+          "budget_percent": 0.5,
+          "name": "brand-design-md",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\brand-design-md",
+          "scope": "user",
+          "tokens": 970,
+          "used": true
+        },
+        {
+          "budget_percent": 0.5,
+          "name": "to-issues",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\to-issues",
+          "scope": "user",
+          "tokens": 914,
+          "used": true
+        },
+        {
+          "budget_percent": 0.4,
+          "name": "grill-with-docs",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\grill-with-docs",
+          "scope": "user",
+          "tokens": 875,
+          "used": true
+        },
+        {
+          "budget_percent": 0.4,
+          "name": "prototype",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\prototype",
+          "scope": "user",
+          "tokens": 815,
+          "used": true
+        },
+        {
+          "budget_percent": 0.4,
+          "name": "to-prd",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\to-prd",
+          "scope": "user",
+          "tokens": 796,
+          "used": true
+        },
+        {
+          "budget_percent": 0.4,
+          "name": "write-a-skill",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\write-a-skill",
+          "scope": "user",
+          "tokens": 786,
+          "used": false
+        },
+        {
+          "budget_percent": 0.4,
+          "name": "receiving-code-review",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\receiving-code-review",
+          "scope": "user",
+          "tokens": 746,
+          "used": true
+        },
+        {
+          "budget_percent": 0.4,
+          "name": "agent-browser",
+          "path": "C:\\Users\\lyh\\.agents\\skills\\agent-browser",
+          "scope": "codex-user",
+          "tokens": 726,
+          "used": true
+        },
+        {
+          "budget_percent": 0.3,
+          "name": "janitor-audit",
+          "path": "D:\\Documents\\Code\\blank\\.claude\\skills\\janitor-audit",
+          "scope": "project",
+          "tokens": 622,
+          "used": true
+        },
+        {
+          "budget_percent": 0.2,
+          "name": "caveman",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\caveman",
+          "scope": "user",
+          "tokens": 492,
+          "used": true
+        },
+        {
+          "budget_percent": 0.2,
+          "name": "requesting-code-review",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\requesting-code-review",
+          "scope": "user",
+          "tokens": 434,
+          "used": true
+        },
+        {
+          "budget_percent": 0.1,
+          "name": "grill-me",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\grill-me",
+          "scope": "user",
+          "tokens": 162,
+          "used": true
+        },
+        {
+          "budget_percent": 0.1,
+          "name": "zoom-out",
+          "path": "C:\\Users\\lyh\\.claude\\skills\\zoom-out",
+          "scope": "user",
+          "tokens": 110,
+          "used": true
+        }
+      ],
+      "total_budget_percent": 30.4,
+      "total_token_cost": 60789,
+      "unused_budget_percent": 0.4,
+      "unused_token_cost": 786
+    },
+    "usage": {
+      "active_skills": 62,
+      "most_used": {
+        "count": 1858,
+        "description": "Fetches any URL or PDF as clean Markdown for reading, quoting, citation, or downstream work. Handles paywalls, JS-heavy pages, X/Twitter, and Chinese platforms via proxy cascade. Not for local text files already in the repo.",
+        "name": "read",
+        "scope": "user"
+      },
+      "period_weeks": 52,
+      "skills": [
+        {
+          "count": 1858,
+          "description": "Fetches any URL or PDF as clean Markdown for reading, quoting, citation, or downstream work. Handles paywalls, JS-heavy pages, X/Twitter, and Chinese platforms via proxy cascade. Not for local text files already in the repo.",
+          "name": "read",
+          "scope": "user"
+        },
+        {
+          "count": 1858,
+          "description": "Fetches any URL or PDF as clean Markdown for reading, quoting, citation, or downstream work. Handles paywalls, JS-heavy pages, X/Twitter, and Chinese platforms via proxy cascade. Not for local text files already in the repo.",
+          "name": "read",
+          "scope": "codex-user"
+        },
+        {
+          "count": 1781,
+          "description": "基于 Manus 风格的文件规划系统，用于组织和跟踪复杂任务的进度。创建 task_plan.md、findings.md 和 progress.md 三个文件。当用户要求规划、拆解或组织多步骤项目、研究任务或需要超过5次工具调用的工作时使用。支持 /clear 后的自动会话恢复。触发词：任务规划、项目计划、制定计划、分解任务、多步骤规划、进度跟踪、文件规划、帮我规划、拆解项目",
+          "name": "planning-with-files-zh",
+          "scope": "user"
+        },
+        {
+          "count": 1781,
+          "description": "基于 Manus 风格的文件规划系统，用于组织和跟踪复杂任务的进度。创建 task_plan.md、findings.md 和 progress.md 三个文件。当用户要求规划、拆解或组织多步骤项目、研究任务或需要超过5次工具调用的工作时使用。支持 /clear 后的自动会话恢复。触发词：任务规划、项目计划、制定计划、分解任务、多步骤规划、进度跟踪、文件规划、帮我规划、拆解项目",
+          "name": "planning-with-files-zh",
+          "scope": "codex-user"
+        },
+        {
+          "count": 1518,
+          "description": "Strips AI writing patterns and rewrites prose to sound natural in Chinese or English. Only activates on explicit writing or editing requests. Not for code comments, commit messages, or inline docs.",
+          "name": "write",
+          "scope": "user"
+        },
+        {
+          "count": 1518,
+          "description": "Strips AI writing patterns and rewrites prose to sound natural in Chinese or English. Only activates on explicit writing or editing requests. Not for code comments, commit messages, or inline docs.",
+          "name": "write",
+          "scope": "codex-user"
+        },
+        {
+          "count": 356,
+          "description": "Produces distinctive, production-grade UI for any component, page, or visual interface. Handles screenshot-driven iteration when the user sends an image with a visual complaint. Not for backend logic or data pipelines.",
+          "name": "design",
+          "scope": "user"
+        },
+        {
+          "count": 356,
+          "description": "Produces distinctive, production-grade UI for any component, page, or visual interface. Handles screenshot-driven iteration when the user sends an image with a visual complaint. Not for backend logic or data pipelines.",
+          "name": "design",
+          "scope": "codex-user"
+        },
+        {
+          "count": 333,
+          "description": "Reviews code diffs and release-ready changes after implementation, executes approved implementation plans, extracts project-specific constraints from repository context, auto-fixes safe issues, and drives approved release, publish, push, release-reaction, and issue/PR follow-through. Also triages issues and PRs when the user mentions them. Not for exploring ideas, debugging, or document prose review.",
+          "name": "check",
+          "scope": "user"
+        },
+        {
+          "count": 333,
+          "description": "Reviews code diffs and release-ready changes after implementation, executes approved implementation plans, extracts project-specific constraints from repository context, auto-fixes safe issues, and drives approved release, publish, push, release-reaction, and issue/PR follow-through. Also triages issues and PRs when the user mentions them. Not for exploring ideas, debugging, or document prose review.",
+          "name": "check",
+          "scope": "codex-user"
+        },
+        {
+          "count": 200,
+          "description": "Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise. Use when user wants to stress-test a plan against their project's language and documented decisions.",
+          "name": "grill-with-docs",
+          "scope": "user"
+        },
+        {
+          "count": 200,
+          "description": "Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise. Use when user wants to stress-test a plan against their project's language and documented decisions.",
+          "name": "grill-with-docs",
+          "scope": "codex-user"
+        },
+        {
+          "count": 194,
+          "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.",
+          "name": "skill-creator",
+          "scope": "codex-user"
+        },
+        {
+          "count": 186,
+          "description": "Safely orchestrate Conventional Commits for staged Git changes, or for all working-tree changes when the user explicitly asks to include everything. Use when the user asks to write a commit message, split staged changes, split all changes, commit everything regardless of stage state, include untracked files in the commit set, organize a messy index before committing, or generate structured commit text without pushing by default. Default to English. Switch to Chinese only when the user explicitly says `请使用中文拆分提交所有的改动`.",
+          "name": "git-commit",
+          "scope": "user"
+        },
+        {
+          "count": 186,
+          "description": "Safely orchestrate Conventional Commits for staged Git changes, or for all working-tree changes when the user explicitly asks to include everything. Use when the user asks to write a commit message, split staged changes, split all changes, commit everything regardless of stage state, include untracked files in the commit set, organize a messy index before committing, or generate structured commit text without pushing by default. Default to English. Switch to Chinese only when the user explicitly says `请使用中文拆分提交所有的改动`.",
+          "name": "git-commit",
+          "scope": "codex-user"
+        },
+        {
+          "count": 118,
+          "description": "Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and AI-navigable.",
+          "name": "improve-codebase-architecture",
+          "scope": "user"
+        },
+        {
+          "count": 118,
+          "description": "Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and AI-navigable.",
+          "name": "improve-codebase-architecture",
+          "scope": "codex-user"
+        },
+        {
+          "count": 87,
+          "description": "Show all your installed skills. Use when the user asks for a skill inventory, skill list, or wants to audit what's installed.",
+          "name": "janitor-audit",
+          "scope": "project"
+        },
+        {
+          "count": 81,
+          "description": "Runs a budget-aware audit of the Claude Code config stack when Claude ignores instructions, behaves inconsistently, hooks malfunction, MCP servers need auditing, or users ask why /health used many tokens. Flags issues by severity. Not for debugging code or reviewing PRs.",
+          "name": "health",
+          "scope": "user"
+        },
+        {
+          "count": 81,
+          "description": "Runs a budget-aware audit of the Claude Code config stack when Claude ignores instructions, behaves inconsistently, hooks malfunction, MCP servers need auditing, or users ask why /health used many tokens. Flags issues by severity. Not for debugging code or reviewing PRs.",
+          "name": "health",
+          "scope": "codex-user"
+        },
+        {
+          "count": 58,
+          "description": "Turn the current conversation context into a PRD and publish it to the project issue tracker. Use when user wants to create a PRD from the current context.",
+          "name": "to-prd",
+          "scope": "user"
+        },
+        {
+          "count": 58,
+          "description": "Turn the current conversation context into a PRD and publish it to the project issue tracker. Use when user wants to create a PRD from the current context.",
+          "name": "to-prd",
+          "scope": "codex-user"
+        },
+        {
+          "count": 55,
+          "description": "Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Use when user says \"caveman mode\", \"talk like caveman\", \"use caveman\", \"less tokens\", \"be brief\", or invokes /caveman.",
+          "name": "caveman",
+          "scope": "user"
+        },
+        {
+          "count": 55,
+          "description": "Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Use when user says \"caveman mode\", \"talk like caveman\", \"use caveman\", \"less tokens\", \"be brief\", or invokes /caveman.",
+          "name": "caveman",
+          "scope": "codex-user"
+        },
+        {
+          "count": 51,
+          "description": "Darwin Skill (达尔文.skill): autonomous skill optimizer inspired by Karpathy's autoresearch. Evaluates SKILL.md files using an 8-dimension rubric (structure + effectiveness), runs hill-climbing with git version control, validates improvements through test prompts, and generates visual result cards. Use when user mentions \\\"优化skill\\\", \\\"skill评分\\\", \\\"自动优化\\\", \\\"auto optimize\\\", \\\"skill质量检查\\\", \\\"达尔文\\\", \\\"darwin\\\", \\\"帮我改改skill\\\", \\\"skill怎么样\\\", \\\"提升skill质量\\\", \\\"skill review\\\", \\\"skill打分\\\".",
+          "name": "darwin",
+          "scope": "user"
+        },
+        {
+          "count": 39,
+          "description": "Sets up an `## Agent skills` block in AGENTS.md/CLAUDE.md and `docs/agents/` so the engineering skills know this repo's issue tracker (GitHub or local markdown), triage label vocabulary, and domain doc layout. Run before first use of `to-issues`, `to-prd`, `triage`, `diagnose`, `tdd`, `improve-codebase-architecture`, or `zoom-out` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.",
+          "name": "setup-matt-pocock-skills",
+          "scope": "user"
+        },
+        {
+          "count": 39,
+          "description": "Sets up an `## Agent skills` block in AGENTS.md/CLAUDE.md and `docs/agents/` so the engineering skills know this repo's issue tracker (GitHub or local markdown), triage label vocabulary, and domain doc layout. Run before first use of `to-issues`, `to-prd`, `triage`, `diagnose`, `tdd`, `improve-codebase-architecture`, or `zoom-out` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.",
+          "name": "setup-matt-pocock-skills",
+          "scope": "codex-user"
+        },
+        {
+          "count": 38,
+          "description": "Use when the user explicitly requests PUA mode or signals frustration, repeated failures (2+), passive behavior, quality complaints, unverified completion, giving up, or asks to try harder/change approach. Common triggers: 'try harder', 'figure it out', 'stop giving up', 'you keep failing', '加油', '别偷懒', '你再试试', '为什么还不行', '你怎么又失败了', '又错了', '质量太差', '换个方法', 'stop spinning', 'you broke it', '/pua', 'PUA模式'. Do not trigger for normal first-attempt coding or information requests.",
+          "name": "pua",
+          "scope": "codex-user"
+        },
+        {
+          "count": 36,
+          "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.",
+          "name": "frontend-design",
+          "scope": "user"
+        },
+        {
+          "count": 36,
+          "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.",
+          "name": "frontend-design",
+          "scope": "codex-user"
+        },
+        {
+          "count": 17,
+          "description": "Triage issues through a state machine driven by triage roles. Use when user wants to create an issue, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow.",
+          "name": "triage",
+          "scope": "user"
+        },
+        {
+          "count": 17,
+          "description": "Triage issues through a state machine driven by triage roles. Use when user wants to create an issue, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow.",
+          "name": "triage",
+          "scope": "codex-user"
+        },
+        {
+          "count": 9,
+          "description": "在任何创造性工作之前必须使用此技能——创建功能、构建组件、添加功能或修改行为。在实现之前先探索用户意图、需求和设计。",
+          "name": "brainstorming",
+          "scope": "user"
+        },
+        {
+          "count": 9,
+          "description": "在任何创造性工作之前必须使用此技能——创建功能、构建组件、添加功能或修改行为。在实现之前先探索用户意图、需求和设计。",
+          "name": "brainstorming",
+          "scope": "codex-user"
+        },
+        {
+          "count": 6,
+          "description": "Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions \"red-green-refactor\", wants integration tests, or asks for test-first development.",
+          "name": "tdd",
+          "scope": "user"
+        },
+        {
+          "count": 6,
+          "description": "Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions \"red-green-refactor\", wants integration tests, or asks for test-first development.",
+          "name": "tdd",
+          "scope": "codex-user"
+        },
+        {
+          "count": 5,
+          "description": "Finds root cause of errors, crashes, regressions, screenshot-reported defects, unexpected behavior, and failing tests before applying any fix. Not for code review or new features.",
+          "name": "hunt",
+          "scope": "user"
+        },
+        {
+          "count": 5,
+          "description": "Finds root cause of errors, crashes, regressions, screenshot-reported defects, unexpected behavior, and failing tests before applying any fix. Not for code review or new features.",
+          "name": "hunt",
+          "scope": "codex-user"
+        },
+        {
+          "count": 5,
+          "description": "Use when the user wants to design, redesign, shape, critique, audit, polish, clarify, distill, harden, optimize, adapt, animate, colorize, extract, or otherwise improve a frontend interface. Covers websites, landing pages, dashboards, product UI, app shells, components, forms, settings, onboarding, and empty states. Handles UX review, visual hierarchy, information architecture, cognitive load, accessibility, performance, responsive behavior, theming, anti-patterns, typography, fonts, spacing, layout, alignment, color, motion, micro-interactions, UX copy, error states, edge cases, i18n, and reusable design systems or tokens. Also use for bland designs that need to become bolder or more delightful, loud designs that should become quieter, live browser iteration on UI elements, or ambitious visual effects that should feel technically extraordinary. Not for backend-only or non-UI tasks.",
+          "name": "impeccable",
+          "scope": "user"
+        },
+        {
+          "count": 5,
+          "description": "收到代码审查反馈后、实施建议之前使用，尤其当反馈不明确或技术上有疑问时——需要技术严谨性和验证，而非敷衍附和或盲目执行",
+          "name": "receiving-code-review",
+          "scope": "user"
+        },
+        {
+          "count": 5,
+          "description": "收到代码审查反馈后、实施建议之前使用，尤其当反馈不明确或技术上有疑问时——需要技术严谨性和验证，而非敷衍附和或盲目执行",
+          "name": "receiving-code-review",
+          "scope": "codex-user"
+        },
+        {
+          "count": 5,
+          "description": "完成任务、实现重要功能或合并前使用，用于验证工作成果是否符合要求",
+          "name": "requesting-code-review",
+          "scope": "user"
+        },
+        {
+          "count": 5,
+          "description": "完成任务、实现重要功能或合并前使用，用于验证工作成果是否符合要求",
+          "name": "requesting-code-review",
+          "scope": "codex-user"
+        },
+        {
+          "count": 5,
+          "description": "Turns rough ideas into approved, decision-complete plans with validated structure before writing code. Covers new features, architecture decisions, and value judgments about whether to build, keep, or remove something. Not for bug fixes or small edits.",
+          "name": "think",
+          "scope": "user"
+        },
+        {
+          "count": 5,
+          "description": "Turns rough ideas into approved, decision-complete plans with validated structure before writing code. Covers new features, architecture decisions, and value judgments about whether to build, keep, or remove something. Not for bug fixes or small edits.",
+          "name": "think",
+          "scope": "codex-user"
+        },
+        {
+          "count": 4,
+          "description": "当用户明确点名真实品牌、产品或媒体站点的视觉语言，并希望先从 getdesign.md 拉取结构化设计规范，再据此生成或改造 UI 代码时使用。适用于“做成 Apple/Stripe/Notion/WIRED 的感觉”“参考某品牌官网风格做页面”“把现有 React 组件改成 Vercel 风格”这类请求，即使用户没提 getdesign.md 也应优先触发。不要用于泛化的“更现代一点”、logo 设计、图片/海报生成、幻灯片换皮、图表/流程图或纯设计分析。",
+          "name": "brand-design-md",
+          "scope": "user"
+        },
+        {
+          "count": 4,
+          "description": "当用户明确点名真实品牌、产品或媒体站点的视觉语言，并希望先从 getdesign.md 拉取结构化设计规范，再据此生成或改造 UI 代码时使用。适用于“做成 Apple/Stripe/Notion/WIRED 的感觉”“参考某品牌官网风格做页面”“把现有 React 组件改成 Vercel 风格”这类请求，即使用户没提 getdesign.md 也应优先触发。不要用于泛化的“更现代一点”、logo 设计、图片/海报生成、幻灯片换皮、图表/流程图或纯设计分析。",
+          "name": "brand-design-md",
+          "scope": "codex-user"
+        },
+        {
+          "count": 4,
+          "description": "Disciplined diagnosis loop for hard bugs and performance regressions. Reproduce → minimise → hypothesise → instrument → fix → regression-test. Use when user says \"diagnose this\" / \"debug this\", reports a bug, says something is broken/throwing/failing, or describes a performance regression.",
+          "name": "diagnose",
+          "scope": "user"
+        },
+        {
+          "count": 4,
+          "description": "Disciplined diagnosis loop for hard bugs and performance regressions. Reproduce → minimise → hypothesise → instrument → fix → regression-test. Use when user says \"diagnose this\" / \"debug this\", reports a bug, says something is broken/throwing/failing, or describes a performance regression.",
+          "name": "diagnose",
+          "scope": "codex-user"
+        },
+        {
+          "count": 4,
+          "description": "Helps users discover and install agent skills when they ask questions like \"how do I do X\", \"find a skill for X\", \"is there a skill that can...\", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.",
+          "name": "find-skills",
+          "scope": "user"
+        },
+        {
+          "count": 4,
+          "description": "Helps users discover and install agent skills when they ask questions like \"how do I do X\", \"find a skill for X\", \"is there a skill that can...\", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.",
+          "name": "find-skills",
+          "scope": "codex-user"
+        },
+        {
+          "count": 4,
+          "description": "Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test a plan, get grilled on their design, or mentions \"grill me\".",
+          "name": "grill-me",
+          "scope": "user"
+        },
+        {
+          "count": 4,
+          "description": "Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test a plan, get grilled on their design, or mentions \"grill me\".",
+          "name": "grill-me",
+          "scope": "codex-user"
+        },
+        {
+          "count": 4,
+          "description": "Build a throwaway prototype to flush out a design before committing to it. Routes between two branches — a runnable terminal app for state/business-logic questions, or several radically different UI variations toggleable from one route. Use when the user wants to prototype, sanity-check a data model or state machine, mock up a UI, explore design options, or says \"prototype this\", \"let me play with it\", \"try a few designs\".",
+          "name": "prototype",
+          "scope": "user"
+        },
+        {
+          "count": 4,
+          "description": "Build a throwaway prototype to flush out a design before committing to it. Routes between two branches — a runnable terminal app for state/business-logic questions, or several radically different UI variations toggleable from one route. Use when the user wants to prototype, sanity-check a data model or state machine, mock up a UI, explore design options, or says \"prototype this\", \"let me play with it\", \"try a few designs\".",
+          "name": "prototype",
+          "scope": "codex-user"
+        },
+        {
+          "count": 4,
+          "description": "Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices. Use when user wants to convert a plan into issues, create implementation tickets, or break down work into issues.",
+          "name": "to-issues",
+          "scope": "user"
+        },
+        {
+          "count": 4,
+          "description": "Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices. Use when user wants to convert a plan into issues, create implementation tickets, or break down work into issues.",
+          "name": "to-issues",
+          "scope": "codex-user"
+        },
+        {
+          "count": 4,
+          "description": "所有联网操作必须通过此 skill 处理，包括：搜索、网页抓取、登录后操作、网络交互等。 触发场景：用户要求搜索信息、查看网页内容、访问需要登录的网站、操作网页界面、抓取社交媒体内容（小红书、微博、推特等）、读取动态渲染页面、以及任何需要真实浏览器环境的网络任务。",
+          "name": "web-access",
+          "scope": "user"
+        },
+        {
+          "count": 4,
+          "description": "所有联网操作必须通过此 skill 处理，包括：搜索、网页抓取、登录后操作、网络交互等。 触发场景：用户要求搜索信息、查看网页内容、访问需要登录的网站、操作网页界面、抓取社交媒体内容（小红书、微博、推特等）、读取动态渲染页面、以及任何需要真实浏览器环境的网络任务。",
+          "name": "web-access",
+          "scope": "codex-user"
+        },
+        {
+          "count": 4,
+          "description": "Tell the agent to zoom out and give broader context or a higher-level perspective. Use when you're unfamiliar with a section of code or need to understand how it fits into the bigger picture.",
+          "name": "zoom-out",
+          "scope": "user"
+        },
+        {
+          "count": 4,
+          "description": "Tell the agent to zoom out and give broader context or a higher-level perspective. Use when you're unfamiliar with a section of code or need to understand how it fits into the bigger picture.",
+          "name": "zoom-out",
+          "scope": "codex-user"
+        },
+        {
+          "count": 2,
+          "description": "Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to \"open a website\", \"fill out a form\", \"click a button\", \"take a screenshot\", \"scrape data from a page\", \"test this web app\", \"login to a site\", \"automate browser actions\", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.",
+          "name": "agent-browser",
+          "scope": "codex-user"
+        },
+        {
+          "count": 0,
+          "description": "Create new agent skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, or build a new skill.",
+          "name": "write-a-skill",
+          "scope": "user"
+        },
+        {
+          "count": 0,
+          "description": "Create new agent skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, or build a new skill.",
+          "name": "write-a-skill",
+          "scope": "codex-user"
+        }
+      ],
+      "total_skills": 64,
+      "unused_skills": 2
+    }
+  }
+]</script>
+
+<script>
+// --- Snapshot storage (embedded, max 20) ---
+const MAX_SNAPSHOTS = 20;
+
+function getSnapshots() {
+  const el = document.getElementById('snapshotData');
+  if (!el) return [];
+  try { return JSON.parse(el.textContent); } catch(e) { return []; }
+}
+
+function drawChart(canvasId, labels, datasets) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  const pad = { top: 20, right: 20, bottom: 40, left: 50 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+
+  // Find global max across all datasets
+  let allVals = datasets.flatMap(ds => ds.data);
+  let maxVal = Math.max(...allVals, 1);
+  maxVal = Math.ceil(maxVal / 5) * 5 || 5;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = '#e5e5e7';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + plotH - (plotH * i / 4);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + plotW, y);
+    ctx.stroke();
+    ctx.fillStyle = '#6e6e73';
+    ctx.font = '10px -apple-system, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(Math.round(maxVal * i / 4), pad.left - 8, y + 3);
+  }
+
+  // X labels
+  ctx.fillStyle = '#6e6e73';
+  ctx.font = '10px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  labels.forEach((label, i) => {
+    const x = pad.left + (plotW * i / (labels.length - 1 || 1));
+    ctx.save();
+    ctx.translate(x, pad.top + plotH + 15);
+    ctx.rotate(-0.4);
+    ctx.fillText(label, 0, 0);
+    ctx.restore();
+  });
+
+  // Draw each dataset
+  datasets.forEach(ds => {
+    const points = ds.data.map((v, i) => ({
+      x: pad.left + (plotW * i / (labels.length - 1 || 1)),
+      y: pad.top + plotH - (plotH * v / maxVal)
+    }));
+
+    // Fill
+    if (ds.fill) {
+      ctx.fillStyle = ds.fill;
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, pad.top + plotH);
+      points.forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(points[points.length-1].x, pad.top + plotH);
+      ctx.fill();
+    }
+
+    // Line
+    ctx.strokeStyle = ds.color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+    ctx.stroke();
+
+    // Dots
+    points.forEach(p => {
+      ctx.fillStyle = ds.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  });
+}
+
+function renderSnapshot(idx) {
+  const snapshots = getSnapshots();
+  const snap = snapshots[idx];
+  if (!snap) return;
+
+  const scan = snap.scan || {};
+  const tokens = snap.tokens || {};
+  const usage = snap.usage || {};
+  const lint = snap.lint || {};
+
+  document.getElementById('headerMeta').textContent =
+    `Snapshot: ${snap.timestamp} | skills-janitor`;
+
+  // --- Top cards ---
+  const totalTokens = tokens.total_tokens || 0;
+  const wastedTokens = tokens.total_unused_tokens || 0;
+  const activeTokens = tokens.total_used_tokens || 0;
+  const budget = tokens.budget || 200000;
+  const skillCount = (scan.skills || []).length;
+  const pluginCount = (scan.plugins || []).length;
+  const activeCount = usage.active_count || 0;
+  const unusedCount = usage.unused_count || 0;
+  const brokenCount = scan.broken_symlinks || 0;
+
+  document.getElementById('topCards').innerHTML = `
+    <div class="card">
+      <div class="card-label red">Context Window Cost</div>
+      <div class="big-number">${totalTokens.toLocaleString()} <span>tokens</span></div>
+      <div style="margin-top:0.5rem;color:var(--text-secondary);font-size:0.85rem">
+        ${(totalTokens/budget*100).toFixed(1)}% of ${(budget/1000).toFixed(0)}k budget
+      </div>
+      <div class="stat-row">
+        <div class="stat-item"><span class="label">Active</span><span class="value green">${activeTokens.toLocaleString()}</span></div>
+        <div class="stat-item"><span class="label">Wasted</span><span class="value red">${wastedTokens.toLocaleString()}</span></div>
+        <div class="stat-item"><span class="label">Budget</span><span class="value">${(budget/1000).toFixed(0)}k</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label green">Skill Activity</div>
+      <div class="big-number">${activeCount} <span>/ ${activeCount + unusedCount} active</span></div>
+      <div style="margin-top:0.75rem">
+        <div class="bar-bg"><div class="bar-fill green" style="width:${activeCount/(activeCount+unusedCount||1)*100}%"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-item"><span class="label">User Skills</span><span class="value">${skillCount}</span></div>
+        <div class="stat-item"><span class="label">Plugins</span><span class="value">${pluginCount}</span></div>
+        <div class="stat-item"><span class="label">Broken</span><span class="value ${brokenCount?'red':''}">${brokenCount}</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label orange">Health Score</div>
+      <div class="big-number">${computeHealthScore(snap)}<span>/100</span></div>
+      <div style="margin-top:0.75rem">
+        <div class="bar-bg"><div class="bar-fill ${computeHealthScore(snap)>=80?'green':computeHealthScore(snap)>=50?'blue':'red'}" style="width:${computeHealthScore(snap)}%"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-item"><span class="label">Critical</span><span class="value ${lint.critical?'red':''}">${lint.critical||0}</span></div>
+        <div class="stat-item"><span class="label">Warnings</span><span class="value">${lint.warnings||0}</span></div>
+        <div class="stat-item"><span class="label">Info</span><span class="value">${lint.info||0}</span></div>
+      </div>
+    </div>
+  `;
+
+  // --- Weekly trend chart ---
+  const weekly = usage.weekly_totals || {};
+  const weekLabels = Object.keys(weekly).sort();
+  if (weekLabels.length > 1) {
+    document.getElementById('trendCard').style.display = '';
+    const weekData = weekLabels.map(w => weekly[w]);
+    // Count unique active skills per week from usage.skills
+    const weekActiveData = weekLabels.map(w => {
+      let count = 0;
+      (usage.skills || []).forEach(s => {
+        const ew = s.explicit_weekly || {};
+        const dw = s.dispatched_weekly || {};
+        const estw = s.estimated_weekly || {};
+        if ((ew[w]||0) + (dw[w]||0) + (estw[w]||0) > 0) count++;
+      });
+      return count;
+    });
+    setTimeout(() => drawChart('trendChart', weekLabels, [
+      { data: weekData, color: 'var(--chart-line)', fill: 'var(--chart-fill)' },
+      { data: weekActiveData, color: 'var(--chart-line2)', fill: 'var(--chart-fill2)' }
+    ]), 50);
+  }
+
+  // --- Skill table ---
+  // Merge three data sources: scan (user skills), usage (dispatched), tokens (cost)
+  const usageMap = {};
+  (usage.skills || []).forEach(s => usageMap[s.name] = s);
+  const tokenMap = {};
+  (tokens.skills || []).forEach(s => tokenMap[s.name] = s);
+  const scanMap = {};
+  (scan.skills || []).forEach(s => scanMap[s.name] = s);
+
+  // Collect all unique skill names across all sources
+  const allNames = new Set();
+  Object.keys(usageMap).forEach(n => allNames.add(n));
+  Object.keys(tokenMap).forEach(n => allNames.add(n));
+  Object.keys(scanMap).forEach(n => allNames.add(n));
+
+  const allSkills = [];
+  allNames.forEach(name => {
+    const u = usageMap[name] || {};
+    const t = tokenMap[name] || {};
+    const s = scanMap[name] || {};
+    const scope = s.scope || t.scope || u.scope || 'plugin';
+    const hasScan = !!scanMap[name];
+    allSkills.push({
+      name: name,
+      scope: scope,
+      tokens: t.tokens || 0,
+      slash: u.explicit || 0,
+      dispatched: u.dispatched || 0,
+      estimated: u.estimated || 0,
+      total: u.total || 0,
+      lastUsed: u.last_used || t.last_used || 'never',
+      status: hasScan ? (s.has_frontmatter ? (s.version ? 'ok' : 'warn') : 'crit') : 'ok',
+      issues: hasScan ? (!s.has_frontmatter ? 'No frontmatter' : !s.version ? 'No version' : '') : ''
+    });
+  });
+
+  allSkills.sort((a, b) => b.total - a.total);
+
+  let tableHTML = `<thead><tr>
+    <th>Skill</th><th>Scope</th><th class="right">Tokens</th>
+    <th class="right">Slash</th><th class="right">Dispatched</th>
+    <th class="right">Total</th><th>Last Used</th><th>Status</th>
+  </tr></thead><tbody>`;
+  allSkills.forEach(s => {
+    const badge = s.status === 'ok' ? '<span class="badge badge-ok">OK</span>' :
+                  s.status === 'warn' ? `<span class="badge badge-warn">${s.issues}</span>` :
+                  `<span class="badge badge-crit">${s.issues}</span>`;
+    const scopeBadge = s.scope === 'plugin' ? '<span class="badge badge-plugin">plugin</span>' :
+                       `<span class="badge badge-info">${s.scope}</span>`;
+    tableHTML += `<tr>
+      <td><strong>${s.name}</strong></td>
+      <td>${scopeBadge}</td>
+      <td class="right">${s.tokens ? s.tokens.toLocaleString() : '-'}</td>
+      <td class="right">${s.slash || '-'}</td>
+      <td class="right">${s.dispatched || '-'}</td>
+      <td class="right"><strong>${s.total}</strong></td>
+      <td>${s.lastUsed}</td>
+      <td>${badge}</td>
+    </tr>`;
+  });
+  tableHTML += '</tbody>';
+  document.getElementById('skillTable').innerHTML = tableHTML;
+
+  // --- Plugin table ---
+  const plugins = scan.plugins || [];
+  let plugHTML = '<thead><tr><th>Plugin</th><th>Source</th><th>Scope</th><th>Version</th></tr></thead><tbody>';
+  plugins.forEach(p => {
+    plugHTML += `<tr><td><strong>${p.name}</strong></td><td>${p.source}</td><td>${p.scope}</td><td>${p.version}</td></tr>`;
+  });
+  plugHTML += '</tbody>';
+  document.getElementById('pluginTable').innerHTML = plugHTML;
+
+  // --- Lint ---
+  const lintIssues = lint.issues || [];
+  if (lintIssues.length === 0) {
+    document.getElementById('lintContent').innerHTML = '<p style="color:var(--green);font-weight:600;margin-top:0.5rem">No critical or warning issues found.</p>';
+  } else {
+    let lintHTML = '<table><thead><tr><th>Severity</th><th>Skill</th><th>Issue</th></tr></thead><tbody>';
+    lintIssues.forEach(i => {
+      const badge = i.severity === 'critical' ? 'badge-crit' : i.severity === 'warning' ? 'badge-warn' : 'badge-info';
+      lintHTML += `<tr><td><span class="badge ${badge}">${i.severity}</span></td><td>${i.skill}</td><td>${i.message}</td></tr>`;
+    });
+    lintHTML += '</tbody></table>';
+    document.getElementById('lintContent').innerHTML = lintHTML;
+  }
+
+  // --- History chart ---
+  if (snapshots.length > 1) {
+    document.getElementById('historySection').style.display = '';
+    const histLabels = snapshots.map(s => s.timestamp.split('T')[0]);
+    const histWasted = snapshots.map(s => (s.tokens || {}).total_unused_tokens || 0);
+    const histActive = snapshots.map(s => (s.usage || {}).active_count || 0);
+    setTimeout(() => drawChart('historyChart', histLabels, [
+      { data: histWasted, color: 'var(--chart-line)', fill: 'var(--chart-fill)' },
+      { data: histActive, color: 'var(--chart-line2)', fill: 'var(--chart-fill2)' }
+    ]), 100);
+  }
+}
+
+function computeHealthScore(snap) {
+  let score = 100;
+  const lint = snap.lint || {};
+  score -= (lint.critical || 0) * 20;
+  score -= (lint.warnings || 0) * 5;
+  score -= (lint.info || 0) * 1;
+  const tokens = snap.tokens || {};
+  if (tokens.waste_pct > 10) score -= 10;
+  else if (tokens.waste_pct > 5) score -= 5;
+  const scan = snap.scan || {};
+  score -= (scan.broken_symlinks || 0) * 15;
+  return Math.max(0, Math.min(100, score));
+}
+
+// --- Init ---
+const snapshots = getSnapshots();
+if (snapshots.length > 1) {
+  const nav = document.getElementById('snapshotNav');
+  nav.style.display = 'flex';
+  const sel = document.getElementById('snapshotSelect');
+  snapshots.forEach((s, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = s.timestamp;
+    sel.appendChild(opt);
+  });
+  sel.value = snapshots.length - 1;
+  document.getElementById('snapshotCount').textContent = `(${snapshots.length} snapshots)`;
+}
+renderSnapshot(snapshots.length - 1);
+</script>
+
+
+
+</body>
+</html>
