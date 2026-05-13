@@ -26,8 +26,10 @@ release-build: build-release
 
 ci: sync-rust-metadata fmt-check clippy test build-release
 
-install-local:
+install:
     cargo install --path . --locked --force
+
+install-local: install
 
 run *args:
     cargo run --bin skills-janitor -- {{args}}
