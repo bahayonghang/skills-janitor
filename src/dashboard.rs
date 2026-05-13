@@ -45,11 +45,20 @@ pub fn run_dashboard(args: DashboardArgs) -> Result<()> {
 
 pub fn update_dashboard(output: Option<PathBuf>, weeks: u32, budget: u64) -> Result<PathBuf> {
     let paths = PlatformPaths::detect()?;
-    let dashboard = output.unwrap_or_else(|| paths.cwd.join("data").join("janitor-dashboard.html"));
+    let dashboard = output.unwrap_or_else(|| paths.cwd.join("janitor-dashboard.html"));
     if let Some(parent) = dashboard.parent() {
         fs::create_dir_all(parent)?;
     }
-    if !dashboard.is_file() {
+
+    // Write the embedded template when the file doesn't exist yet, or when an
+    // existing file is missing the snapshot marker (legacy/corrupted file).
+    let needs_template = if dashboard.is_file() {
+        let existing = fs::read_to_string(&dashboard).unwrap_or_default();
+        !existing.contains(SNAPSHOT_MARKER_START)
+    } else {
+        true
+    };
+    if needs_template {
         fs::write(&dashboard, EMBEDDED_TEMPLATE)?;
     }
 
