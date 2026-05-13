@@ -3,3 +3,9 @@ data/
 .omc/
 .omx/
 target/
+
+
+# planning with files
+task_plan.md
+findings.md
+progress.md
