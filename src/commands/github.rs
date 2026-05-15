@@ -4,11 +4,11 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 
+use crate::analysis::dupes;
 use crate::cli::{CompareArgs, PrecheckArgs, SearchArgs};
-use crate::dupes;
-use crate::frontmatter;
-use crate::inventory;
-use crate::output;
+use crate::domain::frontmatter;
+use crate::domain::inventory;
+use crate::infra::output;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchResult {
@@ -255,7 +255,7 @@ fn load_skill_source(source: &str) -> Result<String> {
     }
     let path = Path::new(source);
     let skill_file = if path.is_dir() {
-        crate::paths::skill_file_in(path)
+        crate::domain::paths::skill_file_in(path)
             .with_context(|| format!("No SKILL.md found in {source}"))?
     } else {
         PathBuf::from(path)

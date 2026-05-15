@@ -5,19 +5,22 @@ use anyhow::{Context, Result, bail};
 use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 
+use crate::analysis::dupes;
+use crate::analysis::lint;
+use crate::analysis::tokens;
 use crate::cli::DashboardArgs;
-use crate::dupes;
-use crate::inventory;
-use crate::lint;
-use crate::output;
-use crate::paths::PlatformPaths;
-use crate::{tokens, usage};
+use crate::domain::context::JanitorContext;
+use crate::domain::paths::PlatformPaths;
+use crate::infra::output;
 
 const SNAPSHOT_MARKER_START: &str = "<script type=\"application/json\" id=\"snapshotData\">";
 const SNAPSHOT_MARKER_END: &str = "</script>";
 const MAX_SNAPSHOTS: usize = 20;
 const DASHBOARD_SCHEMA_VERSION: u32 = 2;
-const EMBEDDED_TEMPLATE: &str = include_str!("../assets/janitor-dashboard.html");
+const EMBEDDED_TEMPLATE: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/assets/janitor-dashboard.html"
+));
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DashboardSnapshot {
@@ -45,6 +48,15 @@ pub fn run_dashboard(args: DashboardArgs) -> Result<()> {
 
 pub fn update_dashboard(output: Option<PathBuf>, weeks: u32, budget: u64) -> Result<PathBuf> {
     let paths = PlatformPaths::detect()?;
+    update_dashboard_with_paths(&paths, output, weeks, budget)
+}
+
+fn update_dashboard_with_paths(
+    paths: &PlatformPaths,
+    output: Option<PathBuf>,
+    weeks: u32,
+    budget: u64,
+) -> Result<PathBuf> {
     let dashboard = output.unwrap_or_else(|| paths.cwd.join("janitor-dashboard.html"));
     if let Some(parent) = dashboard.parent() {
         fs::create_dir_all(parent)?;
@@ -62,26 +74,38 @@ pub fn update_dashboard(output: Option<PathBuf>, weeks: u32, budget: u64) -> Res
         fs::write(&dashboard, EMBEDDED_TEMPLATE)?;
     }
 
-    let inventory = inventory::build_inventory()?;
-    let lint = lint::build_lint_report_from_records(&inventory.skills);
-    let duplicates = dupes::build_duplicate_report_from_records(&inventory.skills);
-    let snapshot = DashboardSnapshot {
-        schema_version: DASHBOARD_SCHEMA_VERSION,
-        timestamp: Timestamp::now().to_string(),
-        period_weeks: weeks,
-        budget,
-        scan: serde_json::to_value(inventory)?,
-        usage: serde_json::to_value(usage::build_usage_report(weeks)?)?,
-        tokens: serde_json::to_value(tokens::build_token_report(budget, weeks)?)?,
-        lint: serde_json::to_value(lint)?,
-        duplicates: serde_json::to_value(duplicates)?,
-    };
+    let mut context = JanitorContext::with_paths(paths.clone())?;
+    let snapshot = build_snapshot_from_context(&mut context, weeks, budget)?;
 
     let html = fs::read_to_string(&dashboard)?;
     let (new_html, snapshot_count) = append_snapshot_to_html(&html, snapshot)?;
     fs::write(&dashboard, new_html)?;
     println!("Snapshot added ({snapshot_count} total)");
     Ok(dashboard)
+}
+
+fn build_snapshot_from_context(
+    context: &mut JanitorContext,
+    weeks: u32,
+    budget: u64,
+) -> Result<DashboardSnapshot> {
+    let inventory = context.inventory();
+    let lint = lint::build_lint_report_from_entries(&context.scan.skills);
+    let duplicates = dupes::build_duplicate_report_from_records(&inventory.skills);
+    let usage = context.usage_report(weeks)?.clone();
+    let tokens = tokens::build_token_report_from_scan(&context.scan, Some(&usage), budget);
+
+    Ok(DashboardSnapshot {
+        schema_version: DASHBOARD_SCHEMA_VERSION,
+        timestamp: Timestamp::now().to_string(),
+        period_weeks: weeks,
+        budget,
+        scan: serde_json::to_value(inventory)?,
+        usage: serde_json::to_value(usage)?,
+        tokens: serde_json::to_value(tokens)?,
+        lint: serde_json::to_value(lint)?,
+        duplicates: serde_json::to_value(duplicates)?,
+    })
 }
 
 fn append_snapshot_to_html(html: &str, snapshot: DashboardSnapshot) -> Result<(String, usize)> {
@@ -193,5 +217,28 @@ mod tests {
         assert!(!embedded.contains("</script>"));
         assert!(embedded.contains("\\u003c/script\\u003e"));
         assert!(embedded.contains("\\u0026"));
+    }
+
+    #[test]
+    fn dashboard_snapshot_reuses_existing_context() {
+        let home = tempfile::tempdir().unwrap();
+        let cwd = tempfile::tempdir().unwrap();
+        let paths = PlatformPaths::from_home_and_cwd(home.path(), cwd.path());
+        let skill = paths.claude_user_skills.join("demo");
+        fs::create_dir_all(&skill).unwrap();
+        fs::write(
+            skill.join("SKILL.md"),
+            "---\nname: demo\ndescription: Use when testing dashboard context reuse.\nmetadata:\n  version: \"1.0.0\"\n---\nBody with Gotchas\n",
+        )
+        .unwrap();
+
+        let mut context = JanitorContext::with_paths(paths.clone()).unwrap();
+        fs::remove_dir_all(&paths.claude_user_skills).unwrap();
+        let snapshot = build_snapshot_from_context(&mut context, 4, 200_000).unwrap();
+
+        assert_eq!(snapshot.scan["skills"].as_array().unwrap().len(), 1);
+        assert_eq!(snapshot.tokens["skills"].as_array().unwrap().len(), 1);
+        assert_eq!(context.cached_usage_report_count(), 1);
+        assert!(!paths.data_dir.join("usage-history.json").exists());
     }
 }

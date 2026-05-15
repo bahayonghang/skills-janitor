@@ -6,9 +6,9 @@ use jiff::Timestamp;
 use serde::Serialize;
 use walkdir::WalkDir;
 
-use crate::frontmatter::{self, Frontmatter};
-use crate::output;
-use crate::paths::{self, PlatformPaths, SkillDir};
+use crate::domain::frontmatter::{self, Frontmatter};
+use crate::domain::paths::{self, PlatformPaths, SkillDir};
+use crate::infra::output;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SkillRecord {
@@ -54,6 +54,48 @@ pub struct Inventory {
     pub broken_symlinks: usize,
 }
 
+#[derive(Debug, Clone)]
+pub struct SkillEntry {
+    pub record: SkillRecord,
+    pub dir: PathBuf,
+    pub skill_file: Option<PathBuf>,
+    pub frontmatter: Frontmatter,
+    pub skill_file_content: Option<String>,
+    pub skill_file_chars: Option<u64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ScanSnapshot {
+    pub scan_date: String,
+    pub skills: Vec<SkillEntry>,
+    pub plugins: Vec<PluginRecord>,
+    pub commands: Vec<CommandRecord>,
+    pub broken_symlinks: usize,
+}
+
+impl ScanSnapshot {
+    pub fn inventory(&self) -> Inventory {
+        Inventory {
+            scan_date: self.scan_date.clone(),
+            skills: self
+                .skills
+                .iter()
+                .map(|entry| entry.record.clone())
+                .collect(),
+            plugins: self.plugins.clone(),
+            commands: self.commands.clone(),
+            broken_symlinks: self.broken_symlinks,
+        }
+    }
+
+    pub fn skill_records(&self) -> Vec<SkillRecord> {
+        self.skills
+            .iter()
+            .map(|entry| entry.record.clone())
+            .collect()
+    }
+}
+
 pub fn run_scan(json: bool) -> Result<()> {
     let inventory = build_inventory()?;
     if json {
@@ -70,17 +112,26 @@ pub fn build_inventory() -> Result<Inventory> {
 }
 
 pub fn build_inventory_with_paths(paths: &PlatformPaths) -> Result<Inventory> {
+    Ok(scan_snapshot_with_paths(paths)?.inventory())
+}
+
+pub fn scan_snapshot() -> Result<ScanSnapshot> {
+    let paths = PlatformPaths::detect()?;
+    scan_snapshot_with_paths(&paths)
+}
+
+pub fn scan_snapshot_with_paths(paths: &PlatformPaths) -> Result<ScanSnapshot> {
     let mut skills = Vec::new();
     for root in paths.skill_roots() {
         for dir in paths::iter_skill_dirs(&root.path)? {
             if dir.file_name().and_then(|n| n.to_str()) == Some("skills-janitor") {
                 continue;
             }
-            skills.push(scan_skill_dir(&root, &dir)?);
+            skills.push(scan_skill_entry(&root, &dir)?);
         }
     }
 
-    Ok(Inventory {
+    Ok(ScanSnapshot {
         scan_date: Timestamp::now().to_string(),
         skills,
         plugins: scan_plugins(paths),
@@ -89,7 +140,12 @@ pub fn build_inventory_with_paths(paths: &PlatformPaths) -> Result<Inventory> {
     })
 }
 
+#[cfg(test)]
 pub fn scan_skill_dir(root: &SkillDir, dir: &Path) -> Result<SkillRecord> {
+    Ok(scan_skill_entry(root, dir)?.record)
+}
+
+pub fn scan_skill_entry(root: &SkillDir, dir: &Path) -> Result<SkillEntry> {
     let folder = dir
         .file_name()
         .and_then(|name| name.to_str())
@@ -111,10 +167,17 @@ pub fn scan_skill_dir(root: &SkillDir, dir: &Path) -> Result<SkillRecord> {
     };
 
     let skill_file = paths::skill_file_in(dir);
-    let fm = match skill_file.as_ref() {
-        Some(path) => frontmatter::parse_file(path).unwrap_or_default(),
+    let skill_file_content = match skill_file.as_ref() {
+        Some(path) => fs::read_to_string(path).ok(),
+        None => None,
+    };
+    let fm = match skill_file_content.as_deref() {
+        Some(content) => frontmatter::parse_content(content),
         None => Frontmatter::default(),
     };
+    let skill_file_chars = skill_file_content
+        .as_ref()
+        .map(|content| content.chars().count() as u64);
 
     let has_body = fm.has_body();
 
@@ -132,7 +195,7 @@ pub fn scan_skill_dir(root: &SkillDir, dir: &Path) -> Result<SkillRecord> {
         0
     };
 
-    Ok(SkillRecord {
+    let record = SkillRecord {
         folder,
         scope: root.scope.as_str().to_string(),
         platform: root.platform.to_string(),
@@ -141,13 +204,22 @@ pub fn scan_skill_dir(root: &SkillDir, dir: &Path) -> Result<SkillRecord> {
         is_symlink,
         symlink_target,
         has_skill_file: skill_file.is_some(),
-        name: fm.name,
-        description: fm.description,
-        version: fm.version,
+        name: fm.name.clone(),
+        description: fm.description.clone(),
+        version: fm.version.clone(),
         has_frontmatter: fm.has_frontmatter,
         has_body,
         line_count: fm.line_count,
         extra_files,
+    };
+
+    Ok(SkillEntry {
+        record,
+        dir: dir.to_path_buf(),
+        skill_file,
+        frontmatter: fm,
+        skill_file_content,
+        skill_file_chars,
     })
 }
 
@@ -258,7 +330,7 @@ pub fn count_broken_symlinks(dir: &Path) -> Result<usize> {
 }
 
 pub fn all_skill_records() -> Result<Vec<SkillRecord>> {
-    Ok(build_inventory()?.skills)
+    Ok(scan_snapshot()?.skill_records())
 }
 
 pub fn find_installed_skill(name: &str) -> Result<Option<(PathBuf, Frontmatter)>> {
@@ -310,7 +382,7 @@ mod tests {
     use tempfile::tempdir;
 
     use super::*;
-    use crate::paths::{SkillDir, SkillScope};
+    use crate::domain::paths::{SkillDir, SkillScope};
 
     #[test]
     fn scans_skill_record_with_metadata_version() {

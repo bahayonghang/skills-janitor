@@ -1,10 +1,12 @@
+use std::path::Path;
+
 use anyhow::Result;
 use serde::Serialize;
 
-use crate::dupes::{self, DuplicateReport};
-use crate::frontmatter;
-use crate::inventory::{self, SkillRecord};
-use crate::output;
+use crate::analysis::dupes::{self, DuplicateReport};
+use crate::domain::frontmatter;
+use crate::domain::inventory::{self, SkillEntry, SkillRecord};
+use crate::infra::output;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct LintIssue {
@@ -43,9 +45,10 @@ pub struct HealthReport {
 }
 
 pub fn build_report() -> Result<HealthReport> {
-    let inventory = inventory::build_inventory()?;
-    let lint = build_lint_report_from_records(&inventory.skills);
-    let duplicates = dupes::build_duplicate_report_from_records(&inventory.skills);
+    let scan = inventory::scan_snapshot()?;
+    let records = scan.skill_records();
+    let lint = build_lint_report_from_entries(&scan.skills);
+    let duplicates = dupes::build_duplicate_report_from_records(&records);
     Ok(HealthReport { lint, duplicates })
 }
 
@@ -57,17 +60,43 @@ pub fn print_report() -> Result<()> {
     Ok(())
 }
 
-pub fn build_lint_report() -> Result<LintReport> {
-    Ok(build_lint_report_from_records(
-        &inventory::all_skill_records()?,
-    ))
+pub fn run_report(json: bool) -> Result<()> {
+    if json {
+        output::print_json(&build_report()?)
+    } else {
+        print_report()
+    }
 }
 
+pub fn build_lint_report() -> Result<LintReport> {
+    let scan = inventory::scan_snapshot()?;
+    Ok(build_lint_report_from_entries(&scan.skills))
+}
+
+#[cfg(test)]
 pub fn build_lint_report_from_records(records: &[SkillRecord]) -> LintReport {
     let mut issues = Vec::new();
     for record in records {
-        lint_record(record, &mut issues);
+        lint_record(record, None, None, None, &mut issues);
     }
+    summarize_issues(issues)
+}
+
+pub fn build_lint_report_from_entries(entries: &[SkillEntry]) -> LintReport {
+    let mut issues = Vec::new();
+    for entry in entries {
+        lint_record(
+            &entry.record,
+            Some(&entry.frontmatter),
+            entry.skill_file.as_deref(),
+            entry.skill_file_content.as_deref(),
+            &mut issues,
+        );
+    }
+    summarize_issues(issues)
+}
+
+fn summarize_issues(issues: Vec<LintIssue>) -> LintReport {
     let mut summary = LintSummary::default();
     for issue in &issues {
         match issue.severity {
@@ -80,7 +109,13 @@ pub fn build_lint_report_from_records(records: &[SkillRecord]) -> LintReport {
     LintReport { summary, issues }
 }
 
-fn lint_record(record: &SkillRecord, issues: &mut Vec<LintIssue>) {
+fn lint_record(
+    record: &SkillRecord,
+    cached_frontmatter: Option<&frontmatter::Frontmatter>,
+    cached_skill_file: Option<&Path>,
+    cached_content: Option<&str>,
+    issues: &mut Vec<LintIssue>,
+) {
     if record.folder == "skills-janitor" {
         return;
     }
@@ -115,11 +150,21 @@ fn lint_record(record: &SkillRecord, issues: &mut Vec<LintIssue>) {
         return;
     }
 
-    let skill_file = crate::paths::skill_file_in(std::path::Path::new(&record.path));
-    let fm = if let Some(skill_file) = &skill_file {
-        frontmatter::parse_file(skill_file).unwrap_or_default()
+    let discovered_skill_file;
+    let skill_file = if cached_skill_file.is_some() {
+        cached_skill_file
     } else {
-        frontmatter::Frontmatter {
+        discovered_skill_file = crate::domain::paths::skill_file_in(Path::new(&record.path));
+        discovered_skill_file.as_deref()
+    };
+    let parsed_fm;
+    let fm = if let Some(fm) = cached_frontmatter {
+        fm
+    } else if let Some(skill_file) = skill_file {
+        parsed_fm = frontmatter::parse_file(skill_file).unwrap_or_default();
+        &parsed_fm
+    } else {
+        parsed_fm = frontmatter::Frontmatter {
             has_frontmatter: record.has_frontmatter,
             has_closing_delimiter: record.has_frontmatter,
             name: record.name.clone(),
@@ -127,7 +172,8 @@ fn lint_record(record: &SkillRecord, issues: &mut Vec<LintIssue>) {
             version: record.version.clone(),
             line_count: record.line_count,
             ..Default::default()
-        }
+        };
+        &parsed_fm
     };
     if !fm.has_closing_delimiter {
         push(
@@ -214,16 +260,24 @@ fn lint_record(record: &SkillRecord, issues: &mut Vec<LintIssue>) {
             ),
         );
     }
-    if let Some(skill_file) = &skill_file {
-        let content = std::fs::read_to_string(skill_file).unwrap_or_default();
-        if !content.to_lowercase().contains("gotcha") {
-            push(
-                issues,
-                Severity::Info,
-                record,
-                "No Gotchas section - consider adding common pitfalls",
-            );
-        }
+    let loaded_content;
+    let content = if let Some(content) = cached_content {
+        Some(content)
+    } else if let Some(skill_file) = skill_file {
+        loaded_content = std::fs::read_to_string(skill_file).unwrap_or_default();
+        Some(loaded_content.as_str())
+    } else {
+        None
+    };
+    if let Some(content) = content
+        && !content.to_lowercase().contains("gotcha")
+    {
+        push(
+            issues,
+            Severity::Info,
+            record,
+            "No Gotchas section - consider adding common pitfalls",
+        );
     }
     if record.line_count > 500 {
         push(

@@ -8,10 +8,10 @@ use anyhow::Result;
 use jiff::{Timestamp, ToSpan};
 use serde::{Deserialize, Serialize};
 
-use crate::dupes;
-use crate::inventory;
-use crate::output;
-use crate::paths::PlatformPaths;
+use crate::analysis::dupes;
+use crate::domain::inventory::{self, ScanSnapshot};
+use crate::domain::paths::PlatformPaths;
+use crate::infra::output;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SkillUsage {
@@ -32,7 +32,10 @@ pub struct UsageReport {
 }
 
 pub fn run_usage(weeks: u32, json: bool) -> Result<()> {
-    let report = build_usage_report(weeks)?;
+    let paths = PlatformPaths::detect()?;
+    let scan = inventory::scan_snapshot_with_paths(&paths)?;
+    let report = build_usage_report_from_snapshot(&paths, &scan, weeks)?;
+    persist_usage_history(&paths, &report).ok();
     if json {
         output::print_json(&report)
     } else {
@@ -41,11 +44,20 @@ pub fn run_usage(weeks: u32, json: bool) -> Result<()> {
     }
 }
 
+#[allow(dead_code)]
 pub fn build_usage_report(weeks: u32) -> Result<UsageReport> {
     let paths = PlatformPaths::detect()?;
-    let inventory = inventory::build_inventory_with_paths(&paths)?;
-    let installed = dupes::installed_keyword_map(&inventory.skills);
-    let counts = collect_usage_counts(&paths, weeks, &installed)?;
+    let scan = inventory::scan_snapshot_with_paths(&paths)?;
+    build_usage_report_from_snapshot(&paths, &scan, weeks)
+}
+
+pub fn build_usage_report_from_snapshot(
+    paths: &PlatformPaths,
+    scan: &ScanSnapshot,
+    weeks: u32,
+) -> Result<UsageReport> {
+    let installed = dupes::installed_keyword_map_from_entries(&scan.skills);
+    let counts = collect_usage_counts(paths, weeks, &installed)?;
     let mut skills = installed
         .into_iter()
         .map(|(name, scope, _keywords, description)| SkillUsage {
@@ -68,7 +80,6 @@ pub fn build_usage_report(weeks: u32) -> Result<UsageReport> {
         most_used,
         skills,
     };
-    persist_usage_history(&paths, &report).ok();
     Ok(report)
 }
 

@@ -1,15 +1,13 @@
-use std::fs;
-use std::path::Path;
-
 use anyhow::Result;
 use serde::Serialize;
+use std::fs;
 
 use crate::cli::FixArgs;
-use crate::frontmatter;
-use crate::fs_safety;
-use crate::inventory;
-use crate::output;
-use crate::paths::{self, PlatformPaths};
+use crate::domain::frontmatter;
+use crate::domain::inventory;
+use crate::domain::paths::{self, PlatformPaths};
+use crate::infra::fs_safety;
+use crate::infra::output;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct FixAction {
@@ -47,7 +45,7 @@ pub fn run_fix(args: FixArgs) -> Result<()> {
 
 pub fn build_fix_report(dry_run: bool, prune: bool) -> Result<FixReport> {
     let paths = PlatformPaths::detect()?;
-    let inventory = inventory::build_inventory_with_paths(&paths)?;
+    let scan = inventory::scan_snapshot_with_paths(&paths)?;
     let mut report = FixReport {
         dry_run,
         prune,
@@ -56,8 +54,9 @@ pub fn build_fix_report(dry_run: bool, prune: bool) -> Result<FixReport> {
         summary: FixSummary::default(),
     };
 
-    for record in &inventory.skills {
-        let path = Path::new(&record.path);
+    for entry in &scan.skills {
+        let record = &entry.record;
+        let path = entry.dir.as_path();
         if record.folder == "skills-janitor" {
             continue;
         }
@@ -70,7 +69,7 @@ pub fn build_fix_report(dry_run: bool, prune: bool) -> Result<FixReport> {
             );
             continue;
         }
-        let Some(skill_file) = paths::skill_file_in(path) else {
+        let Some(skill_file) = entry.skill_file.as_ref() else {
             skip(
                 &mut report,
                 record.folder.clone(),
@@ -89,7 +88,7 @@ pub fn build_fix_report(dry_run: bool, prune: bool) -> Result<FixReport> {
             continue;
         }
 
-        let content = fs::read_to_string(&skill_file)?;
+        let content = fs::read_to_string(skill_file)?;
         let (new_content, actions) = planned_skill_fixes(&record.folder, &content);
         if !actions.is_empty() {
             report.summary.fixable_issues += actions.len();
@@ -102,7 +101,7 @@ pub fn build_fix_report(dry_run: bool, prune: bool) -> Result<FixReport> {
                 });
             }
             if !dry_run {
-                fs_safety::atomic_write(&skill_file, &new_content)?;
+                fs_safety::atomic_write(skill_file, &new_content)?;
             }
         }
     }
@@ -183,18 +182,43 @@ fn skip(report: &mut FixReport, skill: String, path: String, action: impl Into<S
 }
 
 pub fn planned_skill_fixes(skill_name: &str, content: &str) -> (String, Vec<String>) {
-    let mut new_content = content.to_string();
+    let mut document = SkillDocument::new(content);
     let mut actions = Vec::new();
-    let first_line = content.lines().next().unwrap_or_default();
 
-    if first_line.trim() != "---"
-        && content.lines().take(5).any(|line| {
-            line.starts_with("name:")
-                || line.starts_with("description:")
-                || line.starts_with("version:")
-        })
-    {
-        let lines: Vec<_> = content.lines().collect();
+    document.ensure_frontmatter_delimiters(&mut actions);
+    document.ensure_closing_delimiter(&mut actions);
+    document.ensure_description(skill_name, &mut actions);
+    document.ensure_metadata_version(&mut actions);
+
+    (document.into_content(), actions)
+}
+
+struct SkillDocument {
+    content: String,
+}
+
+impl SkillDocument {
+    fn new(content: &str) -> Self {
+        Self {
+            content: content.to_string(),
+        }
+    }
+
+    fn into_content(self) -> String {
+        self.content
+    }
+
+    fn frontmatter(&self) -> frontmatter::Frontmatter {
+        frontmatter::parse_content(&self.content)
+    }
+
+    fn ensure_frontmatter_delimiters(&mut self, actions: &mut Vec<String>) {
+        let first_line = self.content.lines().next().unwrap_or_default();
+        if first_line.trim() == "---" || !looks_like_undelimited_frontmatter(&self.content) {
+            return;
+        }
+
+        let lines: Vec<_> = self.content.lines().collect();
         let mut fm_end = lines.len();
         for (idx, line) in lines.iter().enumerate() {
             if idx == 0 {
@@ -221,13 +245,17 @@ pub fn planned_skill_fixes(skill_name: &str, content: &str) -> (String, Vec<Stri
             rebuilt.push_str(line);
             rebuilt.push('\n');
         }
-        new_content = rebuilt;
+        self.content = rebuilt;
         actions.push("Added missing frontmatter delimiters (---)".to_string());
     }
 
-    let fm = frontmatter::parse_content(&new_content);
-    if fm.has_frontmatter && !fm.has_closing_delimiter {
-        let mut lines: Vec<String> = new_content.lines().map(ToString::to_string).collect();
+    fn ensure_closing_delimiter(&mut self, actions: &mut Vec<String>) {
+        let fm = self.frontmatter();
+        if !fm.has_frontmatter || fm.has_closing_delimiter {
+            return;
+        }
+
+        let mut lines: Vec<String> = self.content.lines().map(ToString::to_string).collect();
         let mut insert_after = 0;
         for (idx, line) in lines.iter().enumerate().skip(1) {
             if is_frontmatter_like(line) {
@@ -236,17 +264,21 @@ pub fn planned_skill_fixes(skill_name: &str, content: &str) -> (String, Vec<Stri
         }
         if insert_after > 0 {
             lines.insert(insert_after + 1, "---".to_string());
-            new_content = lines.join("\n");
-            new_content.push('\n');
+            self.content = lines.join("\n");
+            self.content.push('\n');
             actions.push("Added missing closing --- delimiter".to_string());
         }
     }
 
-    let fm = frontmatter::parse_content(&new_content);
-    if fm.has_frontmatter && fm.has_closing_delimiter {
+    fn ensure_description(&mut self, skill_name: &str, actions: &mut Vec<String>) {
+        let fm = self.frontmatter();
+        if !fm.has_frontmatter || !fm.has_closing_delimiter {
+            return;
+        }
+
         if frontmatter::extract_field(&fm.raw, "description").is_none() {
-            new_content = insert_after_anchor(
-                &new_content,
+            self.content = insert_after_anchor(
+                &self.content,
                 "name:",
                 &format!(
                     "description: \"Use when the user wants to use {skill_name}. Add specific trigger phrases here.\""
@@ -254,8 +286,8 @@ pub fn planned_skill_fixes(skill_name: &str, content: &str) -> (String, Vec<Stri
             );
             actions.push("Added template description field".to_string());
         } else if fm.description.trim().is_empty() {
-            new_content = replace_line_starting(
-                &new_content,
+            self.content = replace_line_starting(
+                &self.content,
                 "description:",
                 &format!(
                     "description: \"Use when the user wants to use {skill_name}. Add specific trigger phrases here.\""
@@ -263,27 +295,37 @@ pub fn planned_skill_fixes(skill_name: &str, content: &str) -> (String, Vec<Stri
             );
             actions.push("Filled empty description with template".to_string());
         }
-
-        let fm = frontmatter::parse_content(&new_content);
-        let has_metadata = fm.raw.lines().any(|line| line.starts_with("metadata:"));
-        if fm.version.is_empty() && has_metadata {
-            actions.push("metadata: block exists but version missing — add 'version: \"1.0.0\"' under it manually".to_string());
-        } else if fm.version.is_empty() {
-            if fm.raw.lines().any(|line| line.starts_with("description:")) {
-                new_content = insert_after_anchor(
-                    &new_content,
-                    "description:",
-                    "metadata:\n  version: \"1.0.0\"",
-                );
-            } else {
-                new_content =
-                    insert_after_anchor(&new_content, "name:", "metadata:\n  version: \"1.0.0\"");
-            }
-            actions.push("Added missing metadata.version field (1.0.0)".to_string());
-        }
     }
 
-    (new_content, actions)
+    fn ensure_metadata_version(&mut self, actions: &mut Vec<String>) {
+        let fm = self.frontmatter();
+        if !fm.has_frontmatter || !fm.has_closing_delimiter || !fm.version.is_empty() {
+            return;
+        }
+
+        let has_metadata = fm.raw.lines().any(|line| line.starts_with("metadata:"));
+        if has_metadata {
+            self.content = insert_after_anchor(&self.content, "metadata:", "  version: \"1.0.0\"");
+        } else if fm.raw.lines().any(|line| line.starts_with("description:")) {
+            self.content = insert_after_anchor(
+                &self.content,
+                "description:",
+                "metadata:\n  version: \"1.0.0\"",
+            );
+        } else {
+            self.content =
+                insert_after_anchor(&self.content, "name:", "metadata:\n  version: \"1.0.0\"");
+        }
+        actions.push("Added missing metadata.version field (1.0.0)".to_string());
+    }
+}
+
+fn looks_like_undelimited_frontmatter(content: &str) -> bool {
+    content.lines().take(5).any(|line| {
+        line.starts_with("name:")
+            || line.starts_with("description:")
+            || line.starts_with("version:")
+    })
 }
 
 fn is_frontmatter_like(line: &str) -> bool {
@@ -381,6 +423,39 @@ mod tests {
         let (out, actions) = planned_skill_fixes("demo", input);
         assert!(actions.iter().any(|a| a.contains("metadata.version")));
         assert!(out.contains("metadata:\n  version: \"1.0.0\""));
+    }
+
+    #[test]
+    fn adds_missing_frontmatter_delimiters() {
+        let input = "name: demo\ndescription: Use when testing demo.\nBody\n";
+        let (out, actions) = planned_skill_fixes("demo", input);
+        assert!(
+            actions
+                .iter()
+                .any(|a| a.contains("missing frontmatter delimiters"))
+        );
+        assert!(out.starts_with("---\nname: demo\n"));
+        assert!(out.contains("\n---\nBody\n"));
+    }
+
+    #[test]
+    fn fills_empty_description() {
+        let input = "---\nname: demo\ndescription:\nmetadata:\n  version: \"1.0.0\"\n---\nBody\n";
+        let (out, actions) = planned_skill_fixes("demo", input);
+        assert!(
+            actions
+                .iter()
+                .any(|a| a.contains("Filled empty description"))
+        );
+        assert!(out.contains("description: \"Use when the user wants to use demo."));
+    }
+
+    #[test]
+    fn adds_version_under_existing_metadata_block() {
+        let input = "---\nname: demo\ndescription: Use when testing demo.\nmetadata:\n  owner: qa\n---\nBody\n";
+        let (out, actions) = planned_skill_fixes("demo", input);
+        assert!(actions.iter().any(|a| a.contains("metadata.version")));
+        assert!(out.contains("metadata:\n  version: \"1.0.0\"\n  owner: qa"));
     }
 
     #[test]

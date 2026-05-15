@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, bail};
 
 use crate::cli::InstallSkillsArgs;
-use crate::paths::skill_file_in;
+use crate::domain::paths::skill_file_in;
 
 const DEFAULT_TARGETS: [&str; 2] = ["claude", "agents"];
 

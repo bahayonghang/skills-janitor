@@ -3,7 +3,9 @@ use std::path::PathBuf;
 use anyhow::Result;
 use clap::{ArgAction, Args, Parser, Subcommand};
 
-use crate::{dashboard, fix, github, inventory, lint, skill_install, tokens, usage};
+use crate::analysis::{lint, tokens, usage};
+use crate::commands::{dashboard, fix, github, skill_install};
+use crate::domain::inventory;
 
 #[derive(Debug, Parser)]
 #[command(name = "skills-janitor")]
@@ -150,14 +152,7 @@ pub fn run() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
         Commands::Scan(args) => inventory::run_scan(args.json),
-        Commands::Report(args) => {
-            if args.json {
-                let report = lint::build_report()?;
-                crate::output::print_json(&report)
-            } else {
-                lint::print_report()
-            }
-        }
+        Commands::Report(args) => lint::run_report(args.json),
         Commands::Fix(args) => fix::run_fix(args),
         Commands::Usage(args) => usage::run_usage(args.weeks, args.json),
         Commands::Tokens(args) => tokens::run_tokens(args.budget, args.weeks, args.json),

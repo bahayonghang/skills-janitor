@@ -1,9 +1,11 @@
 use anyhow::Result;
 use serde::Serialize;
 
-use crate::inventory::{self, SkillRecord};
-use crate::output;
-use crate::usage;
+use crate::analysis::usage;
+use crate::analysis::usage::UsageReport;
+use crate::domain::inventory::{self, ScanSnapshot, SkillEntry};
+use crate::domain::paths::PlatformPaths;
+use crate::infra::output;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SkillTokenCost {
@@ -36,43 +38,59 @@ pub fn run_tokens(budget: u64, weeks: u32, json: bool) -> Result<()> {
 }
 
 pub fn build_token_report(budget: u64, weeks: u32) -> Result<TokenReport> {
-    let inventory = inventory::build_inventory()?;
-    let usage = usage::build_usage_report(weeks).ok();
+    let paths = PlatformPaths::detect()?;
+    build_token_report_with_paths(&paths, budget, weeks)
+}
+
+pub fn build_token_report_with_paths(
+    paths: &PlatformPaths,
+    budget: u64,
+    weeks: u32,
+) -> Result<TokenReport> {
+    let scan = inventory::scan_snapshot_with_paths(paths)?;
+    let usage = usage::build_usage_report_from_snapshot(paths, &scan, weeks).ok();
+    Ok(build_token_report_from_scan(&scan, usage.as_ref(), budget))
+}
+
+pub fn build_token_report_from_scan(
+    scan: &ScanSnapshot,
+    usage: Option<&UsageReport>,
+    budget: u64,
+) -> TokenReport {
     let mut used_names = std::collections::HashSet::new();
     if let Some(usage) = usage {
-        for skill in usage.skills.into_iter().filter(|s| s.count > 0) {
-            used_names.insert(skill.name);
+        for skill in usage.skills.iter().filter(|s| s.count > 0) {
+            used_names.insert(skill.name.clone());
         }
     }
 
-    let mut records = inventory.skills;
-    records.sort_by(|a, b| a.real_path.cmp(&b.real_path));
-    records.dedup_by(|a, b| a.real_path == b.real_path && !a.real_path.is_empty());
+    let mut entries = scan.skills.iter().collect::<Vec<_>>();
+    entries.sort_by(|a, b| a.record.real_path.cmp(&b.record.real_path));
+    entries.dedup_by(|a, b| {
+        a.record.real_path == b.record.real_path && !a.record.real_path.is_empty()
+    });
 
-    let mut skills = records
+    let mut skills = entries
         .iter()
-        .filter(|record| record.has_skill_file && record.folder != "skills-janitor")
-        .map(|record| token_cost(record, budget, used_names.contains(&record.folder)))
+        .filter(|entry| entry.record.has_skill_file && entry.record.folder != "skills-janitor")
+        .map(|entry| token_cost(entry, budget, used_names.contains(&entry.record.folder)))
         .collect::<Vec<_>>();
     skills.sort_by(|a, b| b.tokens.cmp(&a.tokens).then(a.name.cmp(&b.name)));
     let total_token_cost: u64 = skills.iter().map(|s| s.tokens).sum();
     let unused_token_cost: u64 = skills.iter().filter(|s| !s.used).map(|s| s.tokens).sum();
-    Ok(TokenReport {
+    TokenReport {
         budget,
         total_token_cost,
         total_budget_percent: percent(total_token_cost, budget),
         unused_token_cost,
         unused_budget_percent: percent(unused_token_cost, budget),
         skills,
-    })
+    }
 }
 
-fn token_cost(record: &SkillRecord, budget: u64, used: bool) -> SkillTokenCost {
-    let chars = std::fs::read_to_string(
-        crate::paths::skill_file_in(std::path::Path::new(&record.path)).unwrap_or_default(),
-    )
-    .map(|s| s.chars().count() as u64)
-    .unwrap_or_else(|_| {
+fn token_cost(entry: &SkillEntry, budget: u64, used: bool) -> SkillTokenCost {
+    let record = &entry.record;
+    let chars = entry.skill_file_chars.unwrap_or_else(|| {
         record.description.chars().count() as u64 + (record.line_count as u64 * 24)
     });
     let tokens = estimate_tokens(chars, &record.description);
@@ -82,7 +100,7 @@ fn token_cost(record: &SkillRecord, budget: u64, used: bool) -> SkillTokenCost {
         tokens,
         budget_percent: percent(tokens, budget),
         used,
-        path: record.path.clone(),
+        path: entry.dir.display().to_string(),
     }
 }
 
@@ -126,4 +144,32 @@ fn print_token_report(report: &TokenReport) {
         "  Unused skill cost: {} ({:.1}% of budget wasted)",
         report.unused_token_cost, report.unused_budget_percent
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use tempfile::tempdir;
+
+    use super::*;
+
+    #[test]
+    fn token_builder_does_not_persist_usage_history() {
+        let home = tempdir().unwrap();
+        let cwd = tempdir().unwrap();
+        let paths = PlatformPaths::from_home_and_cwd(home.path(), cwd.path());
+        let skill = paths.claude_user_skills.join("demo");
+        fs::create_dir_all(&skill).unwrap();
+        fs::write(
+            skill.join("SKILL.md"),
+            "---\nname: demo\ndescription: Use when testing demo token estimates.\nmetadata:\n  version: \"1.0.0\"\n---\nBody\n",
+        )
+        .unwrap();
+
+        let report = build_token_report_with_paths(&paths, 200_000, 4).unwrap();
+
+        assert_eq!(report.skills.len(), 1);
+        assert!(!paths.data_dir.join("usage-history.json").exists());
+    }
 }
