@@ -15,6 +15,16 @@ cargo install skills-janitor --git https://github.com/bahayonghang/skills-janito
 skills-janitor --version
 ```
 
+在本仓库做本地开发时，可以同时安装 CLI 和内置 skills：
+
+```bash
+just install
+# 额外复制到 .kiro/skills 等项目目标
+just install --target kiro
+```
+
+`just install` 默认把 `skills/*` 复制到当前项目的 `.claude/skills/` 和 `.agents/skills/` 目录。额外的 `--target <name>` 会解析为 `.<name>/skills/`。
+
 如果没有安装 Rust/Cargo，可以从 GitHub Releases 下载对应平台的预编译二进制。
 
 ## Skills 概览

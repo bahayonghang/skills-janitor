@@ -19,9 +19,17 @@ skills-janitor --version
 本地开发安装：
 
 ```bash
-just install-local
+just install
 skills-janitor --version
 ```
+
+`just install` 会先通过 `cargo install --path . --locked --force` 安装 exe，然后把仓库 `skills/*` 复制到当前项目的 `.claude/skills/` 和 `.agents/skills/`。如果要额外测试其他项目级 skill 目录，可以追加目标：
+
+```bash
+just install --target kiro
+```
+
+额外 `--target <name>` 会解析为 `.<name>/skills/`，例如 `--target kiro` 会同步到 `.kiro/skills/`。`just install-local` 是同一安装流程的别名，也支持相同参数。
 
 ## 扫描范围
 
@@ -328,7 +336,7 @@ just clippy
 just test
 just build
 just ci
-just install-local
+just install
 just run report
 ```
 

@@ -9,3 +9,6 @@ target/
 task_plan.md
 findings.md
 progress.md
+.claude/skills/
+.agents/skills/
+.kiro/skills/

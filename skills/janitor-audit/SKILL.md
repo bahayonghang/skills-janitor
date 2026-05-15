@@ -2,7 +2,7 @@
 name: janitor-audit
 description: "Show all your installed skills. Use when the user asks for a skill inventory, skill list, or wants to audit what's installed."
 metadata:
-  version: 2.0.1
+  version: 2.0.2
 ---
 
 ## CLI requirement

@@ -48,9 +48,11 @@ cargo install skills-janitor --git https://github.com/bahayonghang/skills-janito
 
 ```bash
 just ci
-just install-local
+just install
 skills-janitor --version
 ```
+
+`just install` 还会把仓库内置 skills 同步到当前项目 `.claude/skills/` 和 `.agents/skills/`；需要额外测试 Kiro 等目标时可运行 `just install --target kiro`。
 
 如果没有 Rust 工具链，可以从 GitHub Releases 下载 Windows、Linux 或 macOS 预编译二进制。
 

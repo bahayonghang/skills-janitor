@@ -11,6 +11,7 @@ mod inventory;
 mod lint;
 mod output;
 mod paths;
+mod skill_install;
 mod tokens;
 mod usage;
 

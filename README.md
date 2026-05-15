@@ -15,6 +15,16 @@ cargo install skills-janitor --git https://github.com/bahayonghang/skills-janito
 skills-janitor --version
 ```
 
+For local development from this repository, install the CLI and bundled skills together:
+
+```bash
+just install
+# also copy skills into an extra project target such as .kiro/skills
+just install --target kiro
+```
+
+`just install` copies `skills/*` into the current project's `.claude/skills/` and `.agents/skills/` directories by default. Extra `--target <name>` values resolve to `.<name>/skills/`.
+
 If you do not have Rust/Cargo installed, download the prebuilt binary for your platform from GitHub Releases.
 
 ## Skills Overview

@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
 use anyhow::Result;
-use clap::{Args, Parser, Subcommand};
+use clap::{ArgAction, Args, Parser, Subcommand};
 
-use crate::{dashboard, fix, github, inventory, lint, tokens, usage};
+use crate::{dashboard, fix, github, inventory, lint, skill_install, tokens, usage};
 
 #[derive(Debug, Parser)]
 #[command(name = "skills-janitor")]
@@ -33,6 +33,9 @@ pub enum Commands {
     Precheck(PrecheckArgs),
     /// Update and optionally open the HTML dashboard.
     Dashboard(DashboardArgs),
+    /// Install bundled repository skills into project skill roots.
+    #[command(hide = true)]
+    InstallSkills(InstallSkillsArgs),
 }
 
 #[derive(Debug, Args, Clone, Copy)]
@@ -127,6 +130,22 @@ pub struct DashboardArgs {
     pub budget: u64,
 }
 
+#[derive(Debug, Args, Clone)]
+pub struct InstallSkillsArgs {
+    /// Extra project target to install into, in addition to claude and agents.
+    ///
+    /// Built-in targets include `claude`, `agents`/`codex`, and `kiro`.
+    /// Unknown names resolve to `.<name>/skills` under the project directory.
+    #[arg(long, value_name = "TARGET", action = ArgAction::Append)]
+    pub target: Vec<String>,
+    /// Project directory used to resolve target roots.
+    #[arg(long, hide = true)]
+    pub project: Option<PathBuf>,
+    /// Source directory containing skill folders.
+    #[arg(long, hide = true)]
+    pub source: Option<PathBuf>,
+}
+
 pub fn run() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
@@ -146,5 +165,6 @@ pub fn run() -> Result<()> {
         Commands::Compare(args) => github::run_compare(args),
         Commands::Precheck(args) => github::run_precheck(args),
         Commands::Dashboard(args) => dashboard::run_dashboard(args),
+        Commands::InstallSkills(args) => skill_install::run_install_skills(args),
     }
 }
