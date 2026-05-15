@@ -1,26 +1,26 @@
 # CLI 使用方法
 
-`skills-janitor` 是 Skills Janitor 的跨平台 Rust CLI。所有内置 janitor skills 都会优先调用它，因此 CLI 是最稳定、最适合自动化的入口。
+`skillscope` 是 Skillscope 的跨平台 Rust CLI。所有内置 Skillscope skills 都会优先调用它，因此 CLI 是最稳定、最适合自动化的入口。
 
 ## 安装与验证
 
 从当前仓库安装：
 
 ```bash
-cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+cargo install skillscope --git https://github.com/bahayonghang/skillscope --bin skillscope --locked --force
 ```
 
 验证安装：
 
 ```bash
-skills-janitor --version
+skillscope --version
 ```
 
 本地开发安装：
 
 ```bash
 just install
-skills-janitor --version
+skillscope --version
 ```
 
 `just install` 会先通过 `cargo install --path . --locked --force` 安装 exe，然后把仓库 `skills/*` 复制到当前项目的 `.claude/skills/` 和 `.agents/skills/`。如果要额外测试其他项目级 skill 目录，可以追加目标：
@@ -49,15 +49,15 @@ Claude Code 的命令和插件信息也会被读取：
 ## 命令总览
 
 ```bash
-skills-janitor scan --json
-skills-janitor report [--json]
-skills-janitor fix [--apply] [--dry-run] [--prune] [--json]
-skills-janitor usage [--weeks N] [--json]
-skills-janitor tokens [--budget N] [--weeks N] [--json]
-skills-janitor search <keyword> [--limit N] [--json]
-skills-janitor compare <skill-name> [--json]
-skills-janitor precheck <github-url-or-path> [--json]
-skills-janitor dashboard [--open] [--output path] [--weeks N] [--budget N]
+skillscope scan --json
+skillscope report [--json]
+skillscope fix [--apply] [--dry-run] [--prune] [--json]
+skillscope usage [--weeks N] [--json]
+skillscope tokens [--budget N] [--weeks N] [--json]
+skillscope search <keyword> [--limit N] [--json]
+skillscope compare <skill-name> [--json]
+skillscope precheck <github-url-or-path> [--json]
+skillscope dashboard [--open] [--output path] [--weeks N] [--budget N]
 ```
 
 多数命令支持 `--json`，适合脚本、CI 或其他工具读取。
@@ -67,8 +67,8 @@ skills-janitor dashboard [--open] [--output path] [--weeks N] [--budget N]
 扫描所有已安装技能，并输出每个技能的基础信息。
 
 ```bash
-skills-janitor scan
-skills-janitor scan --json
+skillscope scan
+skillscope scan --json
 ```
 
 扫描记录包含：
@@ -87,8 +87,8 @@ skills-janitor scan --json
 运行 lint 与重复检测，给出技能健康报告。
 
 ```bash
-skills-janitor report
-skills-janitor report --json
+skillscope report
+skillscope report --json
 ```
 
 它会报告三类 lint 严重性：
@@ -111,14 +111,14 @@ skills-janitor report --json
 `fix` 默认是 dry-run，只显示计划变更，不写入文件。
 
 ```bash
-skills-janitor fix
-skills-janitor fix --json
+skillscope fix
+skillscope fix --json
 ```
 
 应用可修复问题：
 
 ```bash
-skills-janitor fix --apply
+skillscope fix --apply
 ```
 
 可自动处理的问题包括：
@@ -139,8 +139,8 @@ skills-janitor fix --apply
 查找可清理的损坏技能或空目录：
 
 ```bash
-skills-janitor fix --prune
-skills-janitor fix --prune --apply
+skillscope fix --prune
+skillscope fix --prune --apply
 ```
 
 `--prune` 会检查：
@@ -154,9 +154,9 @@ skills-janitor fix --prune --apply
 分析最近一段时间的对话历史，统计哪些技能被调用过。
 
 ```bash
-skills-janitor usage
-skills-janitor usage --weeks 12
-skills-janitor usage --weeks 52 --json
+skillscope usage
+skillscope usage --weeks 12
+skillscope usage --weeks 52 --json
 ```
 
 参数：
@@ -169,7 +169,7 @@ skills-janitor usage --weeks 52 --json
 它会读取 Claude Code 历史文件和项目会话 JSONL，主要识别 `/skill-name` 和 `"skill-name"` 形式的明确调用。结果会持久化到：
 
 ```text
-~/.claude/skills/skills-janitor/data/usage-history.json
+~/.claude/skills/skillscope/data/usage-history.json
 ```
 
 最多保留最近 12 次使用报告，便于观察趋势。
@@ -179,9 +179,9 @@ skills-janitor usage --weeks 52 --json
 估算每个技能在上下文窗口中占用的 token，并结合 usage 结果标记未使用技能。
 
 ```bash
-skills-janitor tokens
-skills-janitor tokens --budget 200000 --weeks 12
-skills-janitor tokens --json
+skillscope tokens
+skillscope tokens --budget 200000 --weeks 12
+skillscope tokens --json
 ```
 
 参数：
@@ -206,9 +206,9 @@ skills-janitor tokens --json
 按关键词搜索 GitHub 上包含 `SKILL.md` 的代码结果。
 
 ```bash
-skills-janitor search deployment
-skills-janitor search marketing --limit 20
-skills-janitor search testing --json
+skillscope search deployment
+skillscope search marketing --limit 20
+skillscope search testing --json
 ```
 
 参数：
@@ -236,8 +236,8 @@ $env:GITHUB_TOKEN = "..."
 根据本地已安装技能的描述关键词，在 GitHub 搜索替代方案。
 
 ```bash
-skills-janitor compare my-marketing-skill
-skills-janitor compare deploy-helper --json
+skillscope compare my-marketing-skill
+skillscope compare deploy-helper --json
 ```
 
 工作流程：
@@ -254,9 +254,9 @@ skills-janitor compare deploy-helper --json
 在安装新技能前，检查它是否和已有技能高度重叠。
 
 ```bash
-skills-janitor precheck https://github.com/user/repo/tree/main/skills/my-skill
-skills-janitor precheck C:\Users\me\skills\my-skill
-skills-janitor precheck ./local-skill --json
+skillscope precheck https://github.com/user/repo/tree/main/skills/my-skill
+skillscope precheck C:\Users\me\skills\my-skill
+skillscope precheck ./local-skill --json
 ```
 
 支持输入：
@@ -279,9 +279,9 @@ skills-janitor precheck ./local-skill --json
 生成或更新自包含 HTML dashboard。当前页面重点展示技能使用覆盖率、未使用 / 低频技能、健康分、lint 问题、重复项、插件和命令信息，并支持 EN / 中文切换。
 
 ```bash
-skills-janitor dashboard
-skills-janitor dashboard --open --weeks 52
-skills-janitor dashboard --output target/tmp/janitor-dashboard.html --weeks 52 --budget 200000
+skillscope dashboard
+skillscope dashboard --open --weeks 52
+skillscope dashboard --output target/tmp/skillscope-dashboard.html --weeks 52 --budget 200000
 ```
 
 参数：
@@ -289,7 +289,7 @@ skills-janitor dashboard --output target/tmp/janitor-dashboard.html --weeks 52 -
 | 参数 | 默认值 | 说明 |
 | --- | --- | --- |
 | `--open` | 关闭 | 生成后用默认浏览器打开 |
-| `--output path` | `./data/janitor-dashboard.html` | 输出 HTML 路径 |
+| `--output path` | `./skillscope-dashboard.html` | 输出 HTML 路径 |
 | `--weeks N` | `52` | dashboard 中 usage 的分析周期 |
 | `--budget N` | `200000` | 兼容旧 snapshot 的 token 预算参数；当前 dashboard 不展示 token 成本模块 |
 
@@ -300,28 +300,28 @@ dashboard 会追加快照并保留最近 20 次。页面围绕 inventory、usage
 ### 日常体检
 
 ```bash
-skills-janitor report
-skills-janitor usage --weeks 12
-skills-janitor tokens --budget 200000 --weeks 12
+skillscope report
+skillscope usage --weeks 12
+skillscope tokens --budget 200000 --weeks 12
 ```
 
 ### 清理前评估
 
 ```bash
-skills-janitor dashboard --open --weeks 52
-skills-janitor fix --prune
+skillscope dashboard --open --weeks 52
+skillscope fix --prune
 ```
 
 确认输出后再执行：
 
 ```bash
-skills-janitor fix --prune --apply
+skillscope fix --prune --apply
 ```
 
 ### 安装新技能前
 
 ```bash
-skills-janitor precheck https://github.com/user/repo/tree/main/skills/example
+skillscope precheck https://github.com/user/repo/tree/main/skills/example
 ```
 
 如发现中高重叠，先用 `report` 检查已有技能，再决定是否安装、合并或放弃。

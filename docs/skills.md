@@ -1,21 +1,21 @@
 # Skills 使用方法
 
-Skills Janitor 提供 7 个 `janitor-*` 技能。它们适合在 AI 助手会话中使用：用户可以输入 slash command，也可以用自然语言描述目标，由助手选择合适的技能执行。
+Skillscope 提供 7 个 `skillscope-*` 技能。它们适合在 AI 助手会话中使用：用户可以输入 slash command，也可以用自然语言描述目标，由助手选择合适的技能执行。
 
-这些技能本身不重新实现扫描逻辑，而是先检查 `skills-janitor` Rust CLI 是否可用，再调用对应 CLI 命令。这样可以保持 Claude Code、OpenAI Codex、终端和 CI 的行为一致。
+这些技能本身不重新实现扫描逻辑，而是先检查 `skillscope` Rust CLI 是否可用，再调用对应 CLI 命令。这样可以保持 Claude Code、OpenAI Codex、终端和 CI 的行为一致。
 
 ## 使用前提
 
-每个 janitor skill 的第一步都会检查：
+每个 Skillscope skill 的第一步都会检查：
 
 ```bash
-skills-janitor --version
+skillscope --version
 ```
 
 如果 CLI 不存在，应先安装：
 
 ```bash
-cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+cargo install skillscope --git https://github.com/bahayonghang/skillscope --bin skillscope --locked --force
 ```
 
 没有 Rust/Cargo 时，使用 GitHub Releases 中的预编译二进制。除非用户明确要求 legacy mode，否则不建议回退到旧的 Bash/Python 脚本。
@@ -24,20 +24,20 @@ cargo install skills-janitor --git https://github.com/bahayonghang/skills-janito
 
 | Skill | Slash command | 主要用途 | 底层 CLI |
 | --- | --- | --- | --- |
-| `janitor-audit` | `/janitor-audit` | 查看已安装技能清单 | `skills-janitor scan --json` |
-| `janitor-report` | `/janitor-report` | 完整健康检查 | `skills-janitor report` |
-| `janitor-fix` | `/janitor-fix` | 预览或应用自动修复 | `skills-janitor fix` |
-| `janitor-usage` | `/janitor-usage` | 分析技能使用频率 | `skills-janitor usage` |
-| `janitor-tokens` | `/janitor-tokens` | 估算上下文 token 成本 | `skills-janitor tokens` |
-| `janitor-search` | `/janitor-search` | 搜索或对比 GitHub 技能 | `skills-janitor search` / `compare` |
-| `janitor-precheck` | `/janitor-precheck` | 安装前重叠检查 | `skills-janitor precheck` |
+| `skillscope-audit` | `/skillscope-audit` | 查看已安装技能清单 | `skillscope scan --json` |
+| `skillscope-report` | `/skillscope-report` | 完整健康检查 | `skillscope report` |
+| `skillscope-fix` | `/skillscope-fix` | 预览或应用自动修复 | `skillscope fix` |
+| `skillscope-usage` | `/skillscope-usage` | 分析技能使用频率 | `skillscope usage` |
+| `skillscope-tokens` | `/skillscope-tokens` | 估算上下文 token 成本 | `skillscope tokens` |
+| `skillscope-search` | `/skillscope-search` | 搜索或对比 GitHub 技能 | `skillscope search` / `compare` |
+| `skillscope-precheck` | `/skillscope-precheck` | 安装前重叠检查 | `skillscope precheck` |
 
-## `/janitor-audit`：技能清单
+## `/skillscope-audit`：技能清单
 
 用于查看当前安装了哪些技能，以及它们来自哪个 scope。
 
 ```text
-/janitor-audit
+/skillscope-audit
 ```
 
 适合在这些情况下使用：
@@ -49,7 +49,7 @@ cargo install skills-janitor --git https://github.com/bahayonghang/skills-janito
 默认会调用：
 
 ```bash
-skills-janitor scan --json
+skillscope scan --json
 ```
 
 输出应整理成易读表格，通常包含：
@@ -64,21 +64,21 @@ skills-janitor scan --json
 如果用户要求 HTML、可视化报告或 dashboard，优先使用：
 
 ```bash
-skills-janitor dashboard --open --weeks 52
+skillscope dashboard --open --weeks 52
 ```
 
-## `/janitor-report`：完整健康检查
+## `/skillscope-report`：完整健康检查
 
 用于一次性检查 lint、重复、损坏技能和维护建议。
 
 ```text
-/janitor-report
+/skillscope-report
 ```
 
 底层命令：
 
 ```bash
-skills-janitor report
+skillscope report
 ```
 
 适合在这些情况下使用：
@@ -99,22 +99,22 @@ skills-janitor report
 
 - Critical 优先处理。
 - 重复项需要人工确认，避免误删有意保留的技能。
-- 未使用技能可交给 `/janitor-usage` 继续分析；上下文成本问题再交给 `/janitor-tokens` 单独评估。
+- 未使用技能可交给 `/skillscope-usage` 继续分析；上下文成本问题再交给 `/skillscope-tokens` 单独评估。
 
-## `/janitor-fix`：自动修复
+## `/skillscope-fix`：自动修复
 
 用于修复常见 metadata 问题。默认只是预览，不写入文件。
 
 ```text
-/janitor-fix
-/janitor-fix --apply
+/skillscope-fix
+/skillscope-fix --apply
 ```
 
 底层命令：
 
 ```bash
-skills-janitor fix
-skills-janitor fix --apply
+skillscope fix
+skillscope fix --apply
 ```
 
 它可以处理：
@@ -135,15 +135,15 @@ skills-janitor fix --apply
 用于查找损坏 symlink、空技能目录等可删除对象。
 
 ```text
-/janitor-fix --prune
-/janitor-fix --prune --apply
+/skillscope-fix --prune
+/skillscope-fix --prune --apply
 ```
 
 底层命令：
 
 ```bash
-skills-janitor fix --prune
-skills-janitor fix --prune --apply
+skillscope fix --prune
+skillscope fix --prune --apply
 ```
 
 使用建议：
@@ -152,19 +152,19 @@ skills-janitor fix --prune --apply
 - 阅读输出，确认每个待删除对象确实无用。
 - 再运行 `--apply`。
 
-## `/janitor-usage`：使用情况
+## `/skillscope-usage`：使用情况
 
 用于统计哪些技能实际被调用过，哪些长期未使用。
 
 ```text
-/janitor-usage
-/janitor-usage --weeks 12
+/skillscope-usage
+/skillscope-usage --weeks 12
 ```
 
 底层命令：
 
 ```bash
-skills-janitor usage --weeks 12
+skillscope usage --weeks 12
 ```
 
 适合在这些情况下使用：
@@ -183,19 +183,19 @@ skills-janitor usage --weeks 12
 
 由于 usage 依赖本地对话历史，Codex 与 Claude 的可观测程度可能不同。明确 slash command 调用最可靠，自然语言触发只能作为辅助信号。
 
-## `/janitor-tokens`：token 成本
+## `/skillscope-tokens`：token 成本
 
 用于估算技能文件占用的上下文窗口成本。
 
 ```text
-/janitor-tokens
-/janitor-tokens --budget 200000 --weeks 12
+/skillscope-tokens
+/skillscope-tokens --budget 200000 --weeks 12
 ```
 
 底层命令：
 
 ```bash
-skills-janitor tokens --budget 200000 --weeks 12
+skillscope tokens --budget 200000 --weeks 12
 ```
 
 适合在这些情况下使用：
@@ -211,20 +211,20 @@ skills-janitor tokens --budget 200000 --weeks 12
 - 如果只是大但经常使用，不应只因为体积大就删除。
 - 如果长期未使用且和其他技能重叠，优先考虑合并或移除。
 
-## `/janitor-search`：搜索和比较
+## `/skillscope-search`：搜索和比较
 
 用于在 GitHub 查找技能，或比较本地技能与外部替代方案。
 
 ```text
-/janitor-search deployment
-/janitor-search --compare my-skill
+/skillscope-search deployment
+/skillscope-search --compare my-skill
 ```
 
 底层命令：
 
 ```bash
-skills-janitor search deployment
-skills-janitor compare my-skill
+skillscope search deployment
+skillscope compare my-skill
 ```
 
 搜索模式适合：
@@ -240,19 +240,19 @@ skills-janitor compare my-skill
 
 GitHub API 可能遇到速率限制。需要更高额度时设置 `GITHUB_TOKEN`。
 
-## `/janitor-precheck`：安装前检查
+## `/skillscope-precheck`：安装前检查
 
 用于在安装某个新技能前，检查它和已有技能是否重叠。
 
 ```text
-/janitor-precheck https://github.com/user/repo/tree/main/skills/example
-/janitor-precheck ./local-skill
+/skillscope-precheck https://github.com/user/repo/tree/main/skills/example
+/skillscope-precheck ./local-skill
 ```
 
 底层命令：
 
 ```bash
-skills-janitor precheck <github-url-or-path>
+skillscope precheck <github-url-or-path>
 ```
 
 如果用户没有提供 URL 或本地路径，skill 应先询问要检查哪个来源，不能无参数运行。
@@ -279,16 +279,16 @@ skills-janitor precheck <github-url-or-path>
 生成一个 dashboard 给我看
 ```
 
-助手应将这些请求映射到合适的 janitor skill，并在执行前确认 CLI 存在。
+助手应将这些请求映射到合适的 Skillscope skill，并在执行前确认 CLI 存在。
 
 ## 推荐组合流程
 
 ### 第一次接手一个技能环境
 
 ```text
-/janitor-audit
-/janitor-report
-/janitor-tokens --weeks 52
+/skillscope-audit
+/skillscope-report
+/skillscope-tokens --weeks 52
 ```
 
 目标是先建立全局认知，再处理风险。
@@ -296,9 +296,9 @@ skills-janitor precheck <github-url-or-path>
 ### 定期维护
 
 ```text
-/janitor-report
-/janitor-usage --weeks 12
-/janitor-fix
+/skillscope-report
+/skillscope-usage --weeks 12
+/skillscope-fix
 ```
 
 先报告，再根据 dry-run 输出决定是否应用修复。
@@ -306,9 +306,9 @@ skills-janitor precheck <github-url-or-path>
 ### 清理未使用技能
 
 ```text
-/janitor-usage --weeks 52
-/janitor-tokens --weeks 52
-/janitor-fix --prune
+/skillscope-usage --weeks 52
+/skillscope-tokens --weeks 52
+/skillscope-fix --prune
 ```
 
 清理时不要只看未使用次数。还要结合 token 成本、重复检测和技能是否仍有业务价值。
@@ -316,7 +316,7 @@ skills-janitor precheck <github-url-or-path>
 ### 安装新技能前
 
 ```text
-/janitor-precheck https://github.com/user/repo/tree/main/skills/example
+/skillscope-precheck https://github.com/user/repo/tree/main/skills/example
 ```
 
 如果结果是中高重叠，先比较已有技能的职责，再决定安装、合并或放弃。

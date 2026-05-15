@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- **Project renamed to Skillscope.** Package, binary, bundled skills, dashboard asset/output, docs, release artifacts, and install guidance now use `skillscope` / `/skillscope-*` as the canonical names.
+- **Usage history path moved with a safety migration.** New reports are stored under `~/.claude/skills/skillscope/data/`; the first write copies existing legacy history if the new file does not exist.
+
 ## v2.0.1 (2026-05-12)
 
 ### Fixed

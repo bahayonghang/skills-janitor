@@ -2,8 +2,8 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   lang: 'zh-CN',
-  title: 'Skills Janitor',
-  description: 'Skills Janitor CLI 与技能使用文档',
+  title: 'Skillscope',
+  description: 'Skillscope CLI 与技能使用文档',
   lastUpdated: true,
   themeConfig: {
     nav: [
