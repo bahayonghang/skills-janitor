@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- skills-janitor dashboard template v2.1.0 -->
+<!-- skills-janitor dashboard template v2.2.0 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Skills Janitor Dashboard</title>
+<title>Skills Usage Dashboard</title>
 <style>
   :root {
     --bg: #0f172a;
@@ -89,6 +89,12 @@
     padding-top: 22px;
     border-top: 1px solid rgba(255,255,255,0.14);
   }
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
   .toolbar select {
     background: rgba(255,255,255,0.1);
     color: white;
@@ -99,6 +105,13 @@
   }
   .toolbar option { color: var(--text); }
   .note { color: #cbd5e1; font-size: 12px; }
+  .language-toggle { display: flex; gap: 8px; }
+  .language-toggle button {
+    background: rgba(255,255,255,0.12);
+    color: white;
+    border-color: rgba(255,255,255,0.24);
+  }
+  .language-toggle button:hover { border-color: rgba(255,255,255,0.46); }
 
   .kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-bottom: 20px; }
   .card {
@@ -161,7 +174,7 @@
 
   .chart-wrap { height: 305px; }
   canvas { width: 100%; height: 100%; display: block; }
-  .mini-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 14px; }
+  .mini-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-top: 14px; }
   .mini { background: #f8fafc; border: 1px solid var(--line); border-radius: 16px; padding: 12px; }
   .mini span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.07em; }
   .mini strong { display: block; font-size: 24px; letter-spacing: -0.04em; margin-top: 4px; overflow-wrap: anywhere; }
@@ -215,7 +228,7 @@
     body { padding: 18px; }
     .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .split, .details-grid { grid-template-columns: 1fr; }
-    .hero-top, .toolbar { flex-direction: column; align-items: stretch; }
+    .hero-top, .toolbar, .toolbar-left { flex-direction: column; align-items: stretch; }
     .meta-stack { justify-content: flex-start; }
   }
   @media (max-width: 640px) {
@@ -231,18 +244,23 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="eyebrow">Local skills audit</div>
-        <h1>Skills Janitor Dashboard</h1>
-        <p class="subtitle">A static, self-contained view of health issues, unused skills, token waste, usage frequency, duplicate overlap, plugins, and commands. Usage is observed from local history and is approximate.</p>
+        <div class="eyebrow" data-i18n="hero.eyebrow">Local skills usage</div>
+        <h1 data-i18n="hero.title">Skills Usage Dashboard</h1>
+        <p class="subtitle" data-i18n="hero.subtitle">A static, self-contained view of usage coverage, health issues, unused and low-frequency skills, duplicate overlap, plugins, and commands. Usage is observed from local history and is approximate.</p>
       </div>
       <div class="meta-stack" id="heroMeta"></div>
     </div>
     <div class="toolbar">
-      <div id="snapshotNav" style="display:none">
-        <label for="snapshotSelect" class="note">Snapshot</label><br>
-        <select id="snapshotSelect"></select>
+      <div class="toolbar-left">
+        <div id="snapshotNav" style="display:none">
+          <label for="snapshotSelect" class="note" data-i18n="controls.snapshot">Snapshot</label><br>
+          <select id="snapshotSelect"></select>
+        </div>
+        <div class="note" id="snapshotNote"></div>
       </div>
-      <div class="note" id="snapshotNote"></div>
+      <div class="language-toggle" role="group" aria-label="Language">
+        <button id="languageToggle" type="button">中文</button>
+      </div>
     </div>
   </header>
 
@@ -253,8 +271,8 @@
       <div class="card">
         <div class="section-head">
           <div>
-            <h2>Attention Inbox</h2>
-            <div class="section-copy">Sorted by Critical → Warning → unused high-token → low-frequency → duplicate overlap.</div>
+            <h2 data-i18n="attention.title">Attention Inbox</h2>
+            <div class="section-copy" data-i18n="attention.copy">Sorted by Critical → Warning → unused → low-frequency → duplicate overlap.</div>
           </div>
         </div>
         <div class="actions" id="attentionList"></div>
@@ -263,8 +281,8 @@
       <div class="card">
         <div class="section-head">
           <div>
-            <h2>Usage Frequency</h2>
-            <div class="section-copy">Recent observed counts over the selected dashboard period.</div>
+            <h2 data-i18n="usageChart.title">Usage Frequency</h2>
+            <div class="section-copy" data-i18n="usageChart.copy">Recent observed counts over the selected dashboard period.</div>
           </div>
         </div>
         <div class="chart-wrap"><canvas id="usageChart"></canvas></div>
@@ -275,20 +293,20 @@
     <section class="card section">
       <div class="section-head">
         <div>
-          <h2>Usage Frequency Table</h2>
-          <div class="section-copy">Search, filter status, or jump to unused-only cleanup candidates.</div>
+          <h2 data-i18n="usageTable.title">Usage Frequency Table</h2>
+          <div class="section-copy" data-i18n="usageTable.copy">Search, filter status, or jump to unused-only cleanup candidates.</div>
         </div>
         <div class="filters">
-          <input id="usageSearch" type="search" placeholder="Search skill, scope, path...">
+          <input id="usageSearch" type="search" placeholder="Search skill, scope, path..." data-i18n-placeholder="usageTable.search">
           <select id="usageStatus">
-            <option value="all">All statuses</option>
-            <option value="critical">Critical</option>
-            <option value="warning">Warning</option>
-            <option value="unused">Unused</option>
-            <option value="low">Low-frequency</option>
-            <option value="active">Active</option>
+            <option value="all" data-i18n="status.all">All statuses</option>
+            <option value="critical" data-i18n="status.critical">Critical</option>
+            <option value="warning" data-i18n="status.warning">Warning</option>
+            <option value="unused" data-i18n="status.unused">Unused</option>
+            <option value="low" data-i18n="status.low">Low-frequency</option>
+            <option value="active" data-i18n="status.active">Active</option>
           </select>
-          <button id="unusedOnlyBtn" type="button">Unused only</button>
+          <button id="unusedOnlyBtn" type="button" data-i18n="usageTable.unusedOnly">Unused only</button>
         </div>
       </div>
       <div class="table-wrap"><table id="usageTable"></table></div>
@@ -297,17 +315,17 @@
     <section class="card section">
       <div class="section-head">
         <div>
-          <h2>Inventory</h2>
-          <div class="section-copy">Merged by real path so the same symlinked skill can appear across scopes without duplicate noise.</div>
+          <h2 data-i18n="inventory.title">Inventory</h2>
+          <div class="section-copy" data-i18n="inventory.copy">Merged by real path so the same symlinked skill can appear across scopes without duplicate noise.</div>
         </div>
         <div class="filters">
-          <input id="inventorySearch" type="search" placeholder="Search inventory...">
+          <input id="inventorySearch" type="search" placeholder="Search inventory..." data-i18n-placeholder="inventory.search">
           <select id="inventoryStatus">
-            <option value="all">All inventory</option>
-            <option value="critical">Critical</option>
-            <option value="warning">Warning</option>
-            <option value="ok">OK</option>
-            <option value="ambiguous">Ambiguous name</option>
+            <option value="all" data-i18n="inventory.all">All inventory</option>
+            <option value="critical" data-i18n="status.critical">Critical</option>
+            <option value="warning" data-i18n="status.warning">Warning</option>
+            <option value="ok" data-i18n="status.ok">OK</option>
+            <option value="ambiguous" data-i18n="status.ambiguousName">Ambiguous name</option>
           </select>
         </div>
       </div>
@@ -316,21 +334,21 @@
 
     <section class="details-grid section">
       <div class="card">
-        <div class="section-head"><div><h2>Duplicates</h2><div class="section-copy">Name collisions and description overlap.</div></div></div>
+        <div class="section-head"><div><h2 data-i18n="duplicates.title">Duplicates</h2><div class="section-copy" data-i18n="duplicates.copy">Name collisions and description overlap.</div></div></div>
         <div id="duplicatesList" class="compact-list"></div>
       </div>
       <div class="card">
-        <div class="section-head"><div><h2>Plugins / Commands</h2><div class="section-copy">Secondary environment surface.</div></div></div>
+        <div class="section-head"><div><h2 data-i18n="plugins.title">Plugins / Commands</h2><div class="section-copy" data-i18n="plugins.copy">Secondary environment surface.</div></div></div>
         <div id="pluginsCommands" class="compact-list"></div>
       </div>
       <div class="card">
-        <div class="section-head"><div><h2>Snapshot History</h2><div class="section-copy">Latest 20 embedded snapshots.</div></div></div>
+        <div class="section-head"><div><h2 data-i18n="history.title">Snapshot History</h2><div class="section-copy" data-i18n="history.copy">Health score and active coverage across the latest 20 embedded snapshots.</div></div></div>
         <div class="chart-wrap" style="height:210px"><canvas id="historyChart"></canvas></div>
       </div>
     </section>
   </main>
 
-  <div class="footer">Generated locally by <strong>skills-janitor dashboard</strong>. No CDN, no external network dependencies.</div>
+  <div class="footer"><span data-i18n="footer.generated">Generated locally by</span> <strong>skills-janitor dashboard</strong>. <span data-i18n="footer.offline">No CDN, no external network dependencies.</span></div>
 </div>
 
 <!-- Snapshot data storage - must be before main script -->
@@ -338,10 +356,194 @@
 
 <script>
 (function () {
-  const state = { snap: null, skills: [], inventory: [], usageUnusedOnly: false };
+  const state = { snap: null, snapshots: [], currentIndex: 0, skills: [], inventory: [], usageUnusedOnly: false, lang: 'en' };
   const $ = (id) => document.getElementById(id);
   const fmt = new Intl.NumberFormat();
   const palette = { red: '#dc2626', amber: '#d97706', green: '#16a34a', blue: '#2563eb', gray: '#94a3b8' };
+  const i18n = {
+    en: {
+      'page.title': 'Skills Usage Dashboard',
+      'language.toggle': '中文',
+      'language.aria': 'Switch dashboard language',
+      'hero.eyebrow': 'Local skills usage',
+      'hero.title': 'Skills Usage Dashboard',
+      'hero.subtitle': 'A static, self-contained view of usage coverage, health issues, unused and low-frequency skills, duplicate overlap, plugins, and commands. Usage is observed from local history and is approximate.',
+      'controls.snapshot': 'Snapshot',
+      'attention.title': 'Attention Inbox',
+      'attention.copy': 'Sorted by Critical → Warning → unused → low-frequency → duplicate overlap.',
+      'attention.empty': 'No urgent action found in this snapshot.',
+      'attention.fixFirst': 'fix first',
+      'attention.cleanup': 'cleanup',
+      'attention.review': 'review',
+      'attention.unknownSkill': 'unknown skill',
+      'attention.nameCollision': 'name collision',
+      'attention.unusedMeta': 'Unused in {weeks}w; review whether this skill is still needed.',
+      'attention.lowMeta': 'Low-frequency: {count} observed use(s), {rate} uses/week.',
+      'attention.collisionMeta': '{count} distinct real paths share this skill name.',
+      'attention.overlapMeta': '{similarity}% description overlap · {keywords}',
+      'usageChart.title': 'Usage Frequency',
+      'usageChart.copy': 'Recent observed counts over the selected dashboard period.',
+      'usageChart.active': 'Observed active',
+      'usageChart.mostUsed': 'Most used',
+      'usageChart.unused': 'Unused skills',
+      'usageChart.low': 'Low-frequency',
+      'usageChart.none': 'none',
+      'usageTable.title': 'Usage Frequency Table',
+      'usageTable.copy': 'Search, filter status, or jump to unused-only cleanup candidates.',
+      'usageTable.search': 'Search skill, scope, path...',
+      'usageTable.unusedOnly': 'Unused only',
+      'usageTable.empty': 'No skills match the current filters.',
+      'usageTable.skill': 'Skill',
+      'usageTable.scope': 'Scope',
+      'usageTable.count': 'Count',
+      'usageTable.usesPerWeek': 'Uses/week',
+      'usageTable.status': 'Status',
+      'usageTable.path': 'Path',
+      'inventory.title': 'Inventory',
+      'inventory.copy': 'Merged by real path so the same symlinked skill can appear across scopes without duplicate noise.',
+      'inventory.search': 'Search inventory...',
+      'inventory.all': 'All inventory',
+      'inventory.empty': 'No inventory rows match the current filters.',
+      'inventory.skill': 'Skill',
+      'inventory.scopePlatform': 'Scope / Platform',
+      'inventory.lines': 'Lines',
+      'inventory.extraFiles': 'Extra files',
+      'inventory.pathReal': 'Path / real path',
+      'inventory.real': 'real:',
+      'duplicates.title': 'Duplicates',
+      'duplicates.copy': 'Name collisions and description overlap.',
+      'duplicates.nameCollision': 'Name collision',
+      'duplicates.empty': 'No duplicate collisions or high description overlap.',
+      'duplicates.distinct': '{count} distinct skill file(s)',
+      'duplicates.overlap': '{similarity}% overlap',
+      'plugins.title': 'Plugins / Commands',
+      'plugins.copy': 'Secondary environment surface.',
+      'plugins.plugin': 'plugin',
+      'plugins.command': 'command',
+      'plugins.empty': 'No plugin or command records found.',
+      'history.title': 'Snapshot History',
+      'history.copy': 'Health score and active coverage across the latest 20 embedded snapshots.',
+      'footer.generated': 'Generated locally by',
+      'footer.offline': 'No CDN, no external network dependencies.',
+      'meta.schema': 'Schema v{version}',
+      'meta.period': '{weeks} weeks',
+      'meta.snapshots': '{count} embedded snapshot(s)',
+      'meta.current': 'Current snapshot: {timestamp} · static local HTML',
+      'empty.noSnapshots': 'No snapshots embedded yet. Run: skills-janitor dashboard --output data/janitor-dashboard.html --weeks 52',
+      'status.all': 'All statuses',
+      'status.critical': 'Critical',
+      'status.warning': 'Warning',
+      'status.unused': 'Unused',
+      'status.low': 'Low-frequency',
+      'status.active': 'Active',
+      'status.ok': 'OK',
+      'status.lowShort': 'Low freq',
+      'status.ambiguous': 'ambiguous',
+      'status.ambiguousName': 'Ambiguous name',
+      'status.symlink': 'symlink',
+      'kpi.health': 'Health Score',
+      'kpi.healthFoot': '{critical} critical · {warnings} warnings · {activePct}% active',
+      'kpi.tracked': 'Tracked Skills',
+      'kpi.trackedFoot': '{inventory} inventory rows · {weeks}w period',
+      'kpi.activeUnused': 'Active / Unused',
+      'kpi.activeFoot': '{total} tracked skills · {activePct}% active',
+      'kpi.lowFrequency': 'Low Frequency',
+      'kpi.lowFoot': '{lowPct}% of tracked skills below 0.25 uses/week',
+      'kpi.issuesDuplicates': 'Issues / Duplicates',
+      'kpi.issuesFoot': '{info} info · {duplicates} duplicate signal(s)'
+    },
+    zh: {
+      'page.title': '技能使用看板',
+      'language.toggle': 'EN',
+      'language.aria': '切换看板语言',
+      'hero.eyebrow': '本地技能使用情况',
+      'hero.title': '技能使用看板',
+      'hero.subtitle': '一个静态、自包含的本地看板，聚焦使用覆盖率、健康问题、未使用与低频技能、重复重叠、插件和命令。使用数据来自本地历史记录，仅作近似参考。',
+      'controls.snapshot': '快照',
+      'attention.title': '待处理事项',
+      'attention.copy': '按严重错误 → 警告 → 未使用 → 低频 → 重复重叠排序。',
+      'attention.empty': '当前快照没有紧急事项。',
+      'attention.fixFirst': '优先修复',
+      'attention.cleanup': '清理',
+      'attention.review': '复核',
+      'attention.unknownSkill': '未知技能',
+      'attention.nameCollision': '名称冲突',
+      'attention.unusedMeta': '最近 {weeks} 周未观察到使用；请复核是否仍需要保留。',
+      'attention.lowMeta': '低频：观察到 {count} 次使用，平均 {rate} 次/周。',
+      'attention.collisionMeta': '{count} 个不同真实路径共享同一技能名。',
+      'attention.overlapMeta': '{similarity}% 描述重叠 · {keywords}',
+      'usageChart.title': '使用频率',
+      'usageChart.copy': '所选看板周期内观察到的近期使用次数。',
+      'usageChart.active': '已观察活跃',
+      'usageChart.mostUsed': '最常用',
+      'usageChart.unused': '未使用技能',
+      'usageChart.low': '低频技能',
+      'usageChart.none': '无',
+      'usageTable.title': '使用频率表',
+      'usageTable.copy': '搜索、按状态过滤，或快速查看未使用清理候选。',
+      'usageTable.search': '搜索技能、范围、路径...',
+      'usageTable.unusedOnly': '仅未使用',
+      'usageTable.empty': '没有匹配当前过滤条件的技能。',
+      'usageTable.skill': '技能',
+      'usageTable.scope': '范围',
+      'usageTable.count': '次数',
+      'usageTable.usesPerWeek': '每周使用',
+      'usageTable.status': '状态',
+      'usageTable.path': '路径',
+      'inventory.title': '清单',
+      'inventory.copy': '按真实路径合并，避免同一符号链接技能在多个范围中造成重复噪音。',
+      'inventory.search': '搜索清单...',
+      'inventory.all': '全部清单',
+      'inventory.empty': '没有匹配当前过滤条件的清单项。',
+      'inventory.skill': '技能',
+      'inventory.scopePlatform': '范围 / 平台',
+      'inventory.lines': '行数',
+      'inventory.extraFiles': '额外文件',
+      'inventory.pathReal': '路径 / 真实路径',
+      'inventory.real': '真实路径：',
+      'duplicates.title': '重复项',
+      'duplicates.copy': '名称冲突与描述重叠。',
+      'duplicates.nameCollision': '名称冲突',
+      'duplicates.empty': '未发现名称冲突或高描述重叠。',
+      'duplicates.distinct': '{count} 个不同技能文件',
+      'duplicates.overlap': '{similarity}% 重叠',
+      'plugins.title': '插件 / 命令',
+      'plugins.copy': '辅助环境信息。',
+      'plugins.plugin': '插件',
+      'plugins.command': '命令',
+      'plugins.empty': '未找到插件或命令记录。',
+      'history.title': '快照历史',
+      'history.copy': '最近 20 个嵌入快照的健康分与活跃覆盖率。',
+      'footer.generated': '由本地命令生成：',
+      'footer.offline': '无 CDN，无外部网络依赖。',
+      'meta.schema': 'Schema v{version}',
+      'meta.period': '{weeks} 周',
+      'meta.snapshots': '{count} 个嵌入快照',
+      'meta.current': '当前快照：{timestamp} · 静态本地 HTML',
+      'empty.noSnapshots': '尚未嵌入快照。运行：skills-janitor dashboard --output data/janitor-dashboard.html --weeks 52',
+      'status.all': '全部状态',
+      'status.critical': '严重',
+      'status.warning': '警告',
+      'status.unused': '未使用',
+      'status.low': '低频',
+      'status.active': '活跃',
+      'status.ok': '正常',
+      'status.lowShort': '低频',
+      'status.ambiguous': '名称模糊',
+      'status.ambiguousName': '名称模糊',
+      'status.symlink': '符号链接',
+      'kpi.health': '健康分',
+      'kpi.healthFoot': '{critical} 严重 · {warnings} 警告 · {activePct}% 活跃',
+      'kpi.tracked': '跟踪技能',
+      'kpi.trackedFoot': '{inventory} 条清单 · {weeks} 周周期',
+      'kpi.activeUnused': '活跃 / 未使用',
+      'kpi.activeFoot': '{total} 个跟踪技能 · {activePct}% 活跃',
+      'kpi.lowFrequency': '低频技能',
+      'kpi.lowFoot': '{lowPct}% 的跟踪技能低于 0.25 次/周',
+      'kpi.issuesDuplicates': '问题 / 重复',
+      'kpi.issuesFoot': '{info} 信息 · {duplicates} 个重复信号'
+    }
+  };
 
   function esc(value) {
     return String(value ?? '')
@@ -356,6 +558,43 @@
   function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
   function badge(label, kind) { return `<span class="badge ${esc(kind || 'info')}">${esc(label)}</span>`; }
   function firstNonEmpty(...values) { return values.find(v => v !== undefined && v !== null && String(v).length > 0) ?? ''; }
+  function t(key, params = {}) {
+    let text = (i18n[state.lang] && i18n[state.lang][key]) || i18n.en[key] || key;
+    Object.entries(params).forEach(([name, value]) => {
+      text = text.replaceAll(`{${name}}`, String(value));
+    });
+    return text;
+  }
+  function detectInitialLang() {
+    try {
+      const saved = localStorage.getItem('skillsJanitorDashboardLang');
+      if (saved === 'zh' || saved === 'en') return saved;
+    } catch (_err) {}
+    return String(navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+  }
+  function renderStaticText() {
+    document.documentElement.lang = state.lang === 'zh' ? 'zh-CN' : 'en';
+    document.title = t('page.title');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+    });
+    const toggle = $('languageToggle');
+    if (toggle) {
+      toggle.textContent = t('language.toggle');
+      toggle.setAttribute('aria-label', t('language.aria'));
+    }
+  }
+  function setLanguage(lang, persist = true) {
+    state.lang = lang === 'zh' ? 'zh' : 'en';
+    if (persist) {
+      try { localStorage.setItem('skillsJanitorDashboardLang', state.lang); } catch (_err) {}
+    }
+    renderStaticText();
+    renderSnapshot(state.snapshots.length ? state.currentIndex : -1, state.snapshots);
+  }
 
   function getSnapshots() {
     const el = $('snapshotData');
@@ -503,7 +742,7 @@
         issues: issueList,
         inventory: inv
       };
-    }).sort((a, b) => b.count - a.count || b.tokenCost - a.tokenCost || a.name.localeCompare(b.name));
+    }).sort((a, b) => statusRank(a.status) - statusRank(b.status) || b.count - a.count || a.name.localeCompare(b.name));
 
     return { scan, usage, tokens, lint, duplicates, inventory, skills, periodWeeks: num(snap.period_weeks || usage.period_weeks || 52) || 52, budget: num(snap.budget || tokens.budget || 200000) || 200000 };
   }
@@ -512,39 +751,48 @@
     return ({ critical: 0, warning: 1, unused: 2, low: 3, active: 4, ok: 5 })[status] ?? 9;
   }
 
-  function computeHealthScore(model) {
+  function healthMetrics(model) {
     const summary = (model.lint && model.lint.summary) || {};
-    const duplicatePenalty = num((model.duplicates.name_collisions || []).length) * 5 + num((model.duplicates.description_overlaps || []).length) * 2;
-    const unusedPct = pct(num(model.usage.unused_skills), num(model.usage.total_skills));
-    let score = 100;
-    score -= num(summary.critical) * 18;
-    score -= num(summary.warnings) * 5;
-    score -= Math.min(num(summary.info), 10);
-    score -= Math.min(duplicatePenalty, 16);
-    if (unusedPct > 75) score -= 10;
-    else if (unusedPct > 50) score -= 6;
-    score -= Math.min(num(model.scan.broken_symlinks) * 15, 30);
-    return clamp(Math.round(score), 0, 100);
+    const totalSkills = Math.max(model.skills.length, num(model.usage.total_skills), 1);
+    const critical = num(summary.critical);
+    const warnings = num(summary.warnings);
+    const info = num(summary.info);
+    const unused = model.skills.filter(s => s.unused).length || num(model.usage.unused_skills);
+    const low = model.skills.filter(s => s.status === 'low').length;
+    const active = model.skills.filter(s => s.count > 0).length || num(model.usage.active_skills);
+    const duplicateSignals = num((model.duplicates.name_collisions || []).length) + num((model.duplicates.description_overlaps || []).length);
+    const broken = num(model.scan.broken_symlinks);
+    const activePct = pct(active, totalSkills);
+    const penalties = {
+      critical: critical ? Math.min(35, 12 + pct(critical, totalSkills) * 0.35) : 0,
+      warnings: Math.min(22, pct(warnings, totalSkills) * 0.22),
+      info: Math.min(5, info * 0.5),
+      unused: Math.min(20, pct(unused, totalSkills) * 0.2),
+      low: Math.min(10, pct(low, totalSkills) * 0.1),
+      duplicates: Math.min(10, duplicateSignals * 2),
+      broken: Math.min(15, broken * 5)
+    };
+    const activeCoverageBonus = activePct >= 80 ? 5 : activePct >= 60 ? 2 : 0;
+    const totalPenalty = Object.values(penalties).reduce((sum, value) => sum + value, 0);
+    const score = clamp(Math.round(100 - totalPenalty + activeCoverageBonus), 0, 100);
+    return { score, critical, warnings, info, unused, low, active, totalSkills, activePct, duplicateSignals, broken, penalties, activeCoverageBonus };
+  }
+
+  function computeHealthScore(model) {
+    return healthMetrics(model).score;
   }
 
   function renderKpis(model) {
-    const summary = model.lint.summary || {};
-    const active = num(model.usage.active_skills);
-    const unused = num(model.usage.unused_skills);
-    const total = num(model.usage.total_skills || (active + unused));
-    const totalCost = num(model.tokens.total_token_cost);
-    const unusedCost = num(model.tokens.unused_token_cost);
-    const score = computeHealthScore(model);
-    const scoreKind = score >= 80 ? '' : score >= 55 ? 'warn' : 'bad';
-    const costPct = pct(totalCost, model.budget);
-    const unusedCostPct = pct(unusedCost, model.budget);
-    const activePct = pct(active, total);
+    const metrics = healthMetrics(model);
+    const scoreKind = metrics.score >= 80 ? '' : metrics.score >= 55 ? 'warn' : 'bad';
+    const unusedPct = pct(metrics.unused, metrics.totalSkills);
+    const lowPct = pct(metrics.low, metrics.totalSkills);
     $('kpis').innerHTML = [
-      kpi('Health Score', `${score}<small>/100</small>`, `${num(summary.critical)} critical · ${num(summary.warnings)} warnings`, score, scoreKind),
-      kpi('Critical / Warn', `${num(summary.critical)}<small> / ${num(summary.warnings)}</small>`, `${num(summary.info)} info · ${num(summary.total)} total issues`, Math.max(0, 100 - num(summary.critical) * 25 - num(summary.warnings) * 5), scoreKind),
-      kpi('Active / Unused', `${active}<small> / ${unused}</small>`, `${total} tracked skills · ${activePct}% active`, activePct, activePct < 30 ? 'bad' : activePct < 60 ? 'warn' : ''),
-      kpi('Token Cost', `${fmt.format(totalCost)}<small> tok</small>`, `${costPct}% of ${fmt.format(model.budget)} · ${fmt.format(unusedCost)} unused (${unusedCostPct}%)`, Math.min(costPct, 100), costPct > 60 ? 'bad' : costPct > 30 ? 'warn' : ''),
-      kpi('Plugins / Commands', `${num((model.scan.plugins || []).length)}<small> / ${num((model.scan.commands || []).length)}</small>`, `${num(model.scan.broken_symlinks)} broken symlink(s)`, Math.min(100, num((model.scan.plugins || []).length) * 8 + num((model.scan.commands || []).length) * 4), num(model.scan.broken_symlinks) ? 'bad' : '')
+      kpi(t('kpi.health'), `${metrics.score}<small>/100</small>`, t('kpi.healthFoot', { critical: metrics.critical, warnings: metrics.warnings, activePct: metrics.activePct }), metrics.score, scoreKind),
+      kpi(t('kpi.tracked'), fmt.format(metrics.totalSkills), t('kpi.trackedFoot', { inventory: fmt.format(model.inventory.length), weeks: model.periodWeeks }), 100, ''),
+      kpi(t('kpi.activeUnused'), `${fmt.format(metrics.active)}<small> / ${fmt.format(metrics.unused)}</small>`, t('kpi.activeFoot', { total: fmt.format(metrics.totalSkills), activePct: metrics.activePct }), metrics.activePct, metrics.activePct < 30 ? 'bad' : metrics.activePct < 60 ? 'warn' : ''),
+      kpi(t('kpi.lowFrequency'), fmt.format(metrics.low), t('kpi.lowFoot', { lowPct }), Math.max(0, 100 - lowPct), lowPct > 25 ? 'warn' : ''),
+      kpi(t('kpi.issuesDuplicates'), `${fmt.format(metrics.critical + metrics.warnings)}<small> / ${fmt.format(metrics.duplicateSignals)}</small>`, t('kpi.issuesFoot', { info: fmt.format(metrics.info), duplicates: fmt.format(metrics.duplicateSignals) }), Math.max(0, 100 - metrics.penalties.critical - metrics.penalties.warnings - metrics.penalties.duplicates), metrics.critical ? 'bad' : metrics.warnings || metrics.duplicateSignals ? 'warn' : '')
     ].join('');
   }
 
@@ -555,17 +803,16 @@
   function buildAttention(model) {
     const actions = [];
     (model.lint.issues || []).forEach(issue => {
-      actions.push({ priority: issue.severity === 'critical' ? 0 : issue.severity === 'warning' ? 1 : 5, kind: issue.severity, title: issue.skill || 'unknown skill', meta: issue.message || '', path: issue.path || '' });
+      actions.push({ priority: issue.severity === 'critical' ? 0 : issue.severity === 'warning' ? 1 : 5, kind: issue.severity, title: issue.skill || t('attention.unknownSkill'), meta: issue.message || '', path: issue.path || '' });
     });
-    model.skills.filter(s => s.unused && s.tokenCost > 0).slice().sort((a, b) => b.tokenCost - a.tokenCost).slice(0, 10).forEach(s => {
-      const budget = typeof s.budgetPercent === 'number' ? s.budgetPercent.toFixed(1) : s.budgetPercent;
-      actions.push({ priority: 2, kind: 'warning', title: s.name, meta: `Unused in ${model.periodWeeks}w; estimated token cost ${fmt.format(s.tokenCost)} (${budget}% budget).`, path: s.path });
+    model.skills.filter(s => s.unused).slice().sort((a, b) => a.name.localeCompare(b.name)).slice(0, 10).forEach(s => {
+      actions.push({ priority: 2, kind: 'warning', title: s.name, meta: t('attention.unusedMeta', { weeks: model.periodWeeks }), path: s.path });
     });
     model.skills.filter(s => !s.unused && s.usesPerWeek > 0 && s.usesPerWeek < 0.25).slice(0, 10).forEach(s => {
-      actions.push({ priority: 3, kind: 'info', title: s.name, meta: `Low-frequency: ${s.count} observed use(s), ${s.usesPerWeek.toFixed(2)} uses/week.`, path: s.path });
+      actions.push({ priority: 3, kind: 'info', title: s.name, meta: t('attention.lowMeta', { count: fmt.format(s.count), rate: s.usesPerWeek.toFixed(2) }), path: s.path });
     });
-    (model.duplicates.name_collisions || []).forEach(c => actions.push({ priority: 4, kind: 'warning', title: c.name || 'name collision', meta: `${(c.entries || []).length} distinct real paths share this skill name.`, path: '' }));
-    (model.duplicates.description_overlaps || []).slice(0, 8).forEach(o => actions.push({ priority: 4, kind: 'info', title: `${o.skill_a || '?'} ↔ ${o.skill_b || '?'}`, meta: `${num(o.similarity)}% description overlap · ${(o.common_keywords || []).join(', ')}`, path: '' }));
+    (model.duplicates.name_collisions || []).forEach(c => actions.push({ priority: 4, kind: 'warning', title: c.name || t('attention.nameCollision'), meta: t('attention.collisionMeta', { count: fmt.format((c.entries || []).length) }), path: '' }));
+    (model.duplicates.description_overlaps || []).slice(0, 8).forEach(o => actions.push({ priority: 4, kind: 'info', title: `${o.skill_a || '?'} ↔ ${o.skill_b || '?'}`, meta: t('attention.overlapMeta', { similarity: num(o.similarity), keywords: (o.common_keywords || []).join(', ') }), path: '' }));
     actions.sort((a, b) => a.priority - b.priority || a.title.localeCompare(b.title));
     return actions.slice(0, 24);
   }
@@ -573,7 +820,7 @@
   function renderAttention(model) {
     const actions = buildAttention(model);
     if (!actions.length) {
-      $('attentionList').innerHTML = '<div class="empty">No urgent action found in this snapshot.</div>';
+      $('attentionList').innerHTML = `<div class="empty">${esc(t('attention.empty'))}</div>`;
       return;
     }
     $('attentionList').innerHTML = actions.map((a, idx) => `
@@ -584,20 +831,22 @@
           <div class="action-meta">${esc(a.meta)}</div>
           ${a.path ? `<div class="action-meta">${esc(a.path)}</div>` : ''}
         </div>
-        <div>${a.priority <= 1 ? badge('fix first', 'critical') : a.priority === 2 ? badge('cleanup', 'warning') : badge('review', 'info')}</div>
+        <div>${a.priority <= 1 ? badge(t('attention.fixFirst'), 'critical') : a.priority === 2 ? badge(t('attention.cleanup'), 'warning') : badge(t('attention.review'), 'info')}</div>
       </article>`).join('');
   }
 
   function renderUsageChart(model) {
-    const top = model.skills.slice().sort((a, b) => b.count - a.count || b.tokenCost - a.tokenCost).slice(0, 12).reverse();
+    const top = model.skills.slice().sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)).slice(0, 12).reverse();
     drawBars('usageChart', top.map(s => s.name), top.map(s => s.count), top.map(s => s.unused ? palette.gray : palette.blue));
     const active = model.skills.filter(s => s.count > 0).length;
-    const unusedHighCost = model.skills.filter(s => s.unused && s.tokenCost > 0).sort((a, b) => b.tokenCost - a.tokenCost)[0];
+    const unused = model.skills.filter(s => s.unused).length;
+    const low = model.skills.filter(s => s.status === 'low').length;
     const mostUsed = model.skills.filter(s => s.count > 0).sort((a, b) => b.count - a.count)[0];
     $('usageMini').innerHTML = `
-      <div class="mini"><span>Observed active</span><strong>${fmt.format(active)}</strong></div>
-      <div class="mini"><span>Most used</span><strong>${esc(mostUsed ? mostUsed.name : 'none')}</strong></div>
-      <div class="mini"><span>Top waste</span><strong>${esc(unusedHighCost ? unusedHighCost.name : 'none')}</strong></div>`;
+      <div class="mini"><span>${esc(t('usageChart.active'))}</span><strong>${fmt.format(active)}</strong></div>
+      <div class="mini"><span>${esc(t('usageChart.mostUsed'))}</span><strong>${esc(mostUsed ? mostUsed.name : t('usageChart.none'))}</strong></div>
+      <div class="mini"><span>${esc(t('usageChart.unused'))}</span><strong>${fmt.format(unused)}</strong></div>
+      <div class="mini"><span>${esc(t('usageChart.low'))}</span><strong>${fmt.format(low)}</strong></div>`;
   }
 
   function drawBars(canvasId, labels, values, colors) {
@@ -641,7 +890,8 @@
   function drawHistory(snapshots) {
     const points = snapshots.map(s => {
       const model = normalizeSnapshot(s);
-      return { label: String(s.timestamp || '').split('T')[0], score: computeHealthScore(model), waste: num(model.tokens.unused_token_cost) };
+      const metrics = healthMetrics(model);
+      return { label: String(s.timestamp || '').split('T')[0], score: metrics.score, activePct: metrics.activePct };
     });
     drawLine('historyChart', points);
   }
@@ -658,11 +908,10 @@
     const pad = { top: 18, right: 20, bottom: 34, left: 42 };
     const plotW = width - pad.left - pad.right;
     const plotH = height - pad.top - pad.bottom;
-    const maxWaste = Math.max(1, ...points.map(p => p.waste));
     ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) { const y = pad.top + plotH * i / 4; ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + plotW, y); ctx.stroke(); }
     drawSeries(points.map((p, i) => ({ x: pad.left + (plotW * i / Math.max(1, points.length - 1)), y: pad.top + plotH - (p.score / 100) * plotH })), palette.green);
-    drawSeries(points.map((p, i) => ({ x: pad.left + (plotW * i / Math.max(1, points.length - 1)), y: pad.top + plotH - (p.waste / maxWaste) * plotH })), palette.red);
+    drawSeries(points.map((p, i) => ({ x: pad.left + (plotW * i / Math.max(1, points.length - 1)), y: pad.top + plotH - (p.activePct / 100) * plotH })), palette.blue);
     ctx.fillStyle = '#64748b'; ctx.font = '10px ui-sans-serif, system-ui'; ctx.textAlign = 'center';
     points.forEach((p, i) => { if (points.length <= 6 || i === 0 || i === points.length - 1 || i % Math.ceil(points.length/5) === 0) ctx.fillText(p.label.slice(5), pad.left + (plotW * i / Math.max(1, points.length - 1)), height - 12); });
     function drawSeries(series, color) { ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath(); series.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); series.forEach(p => { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill(); }); }
@@ -689,16 +938,15 @@
       }
       return true;
     });
-    $('usageTable').innerHTML = `<thead><tr><th>Skill</th><th>Scope</th><th class="right">Count</th><th>Uses/week</th><th class="right">Token cost</th><th>Status</th><th>Path</th></tr></thead><tbody>${rows.map(s => usageRow(s, maxCount)).join('') || `<tr><td colspan="7" class="muted">No skills match the current filters.</td></tr>`}</tbody>`;
+    $('usageTable').innerHTML = `<thead><tr><th>${esc(t('usageTable.skill'))}</th><th>${esc(t('usageTable.scope'))}</th><th class="right">${esc(t('usageTable.count'))}</th><th>${esc(t('usageTable.usesPerWeek'))}</th><th>${esc(t('usageTable.status'))}</th><th>${esc(t('usageTable.path'))}</th></tr></thead><tbody>${rows.map(s => usageRow(s, maxCount)).join('') || `<tr><td colspan="6" class="muted">${esc(t('usageTable.empty'))}</td></tr>`}</tbody>`;
   }
   function usageRow(s, maxCount) {
-    const statusBadge = s.status === 'critical' ? badge('Critical', 'critical') : s.status === 'warning' ? badge('Warning', 'warning') : s.unused ? badge('Unused', 'warning') : s.status === 'low' ? badge('Low freq', 'info') : badge('Active', 'ok');
+    const statusBadge = s.status === 'critical' ? badge(t('status.critical'), 'critical') : s.status === 'warning' ? badge(t('status.warning'), 'warning') : s.unused ? badge(t('status.unused'), 'warning') : s.status === 'low' ? badge(t('status.lowShort'), 'info') : badge(t('status.active'), 'ok');
     return `<tr>
-      <td><div class="skill-name">${esc(s.name)} ${s.ambiguous ? badge('ambiguous', 'ambiguous') : ''}</div><div class="muted">${esc(s.description).slice(0, 140)}</div></td>
+      <td><div class="skill-name">${esc(s.name)} ${s.ambiguous ? badge(t('status.ambiguous'), 'ambiguous') : ''}</div><div class="muted">${esc(s.description).slice(0, 140)}</div></td>
       <td>${esc(s.scope).split(', ').filter(Boolean).map(v => badge(v, 'scope')).join(' ')}</td>
       <td class="right"><strong>${fmt.format(s.count)}</strong></td>
       <td><div class="barline"><div class="bar-bg"><div class="bar-fill ${s.count ? '' : 'zero'}" style="width:${pct(s.count, maxCount)}%"></div></div><span>${s.usesPerWeek.toFixed(2)}</span></div></td>
-      <td class="right nowrap">${fmt.format(s.tokenCost)}</td>
       <td>${statusBadge}</td>
       <td><div class="path">${esc(s.path)}</div></td>
     </tr>`;
@@ -714,20 +962,20 @@
       if (status !== 'all' && item.status !== status) return false;
       return true;
     });
-    $('inventoryTable').innerHTML = `<thead><tr><th>Skill</th><th>Scope / Platform</th><th>Status</th><th class="right">Lines</th><th class="right">Extra files</th><th>Path / real path</th></tr></thead><tbody>${rows.map(inventoryRow).join('') || `<tr><td colspan="6" class="muted">No inventory rows match the current filters.</td></tr>`}</tbody>`;
+    $('inventoryTable').innerHTML = `<thead><tr><th>${esc(t('inventory.skill'))}</th><th>${esc(t('inventory.scopePlatform'))}</th><th>${esc(t('usageTable.status'))}</th><th class="right">${esc(t('inventory.lines'))}</th><th class="right">${esc(t('inventory.extraFiles'))}</th><th>${esc(t('inventory.pathReal'))}</th></tr></thead><tbody>${rows.map(inventoryRow).join('') || `<tr><td colspan="6" class="muted">${esc(t('inventory.empty'))}</td></tr>`}</tbody>`;
   }
   function inventoryRow(item) {
-    const statusBadge = item.status === 'critical' ? badge('Critical', 'critical') : item.status === 'warning' ? badge('Warning', 'warning') : badge('OK', 'ok');
+    const statusBadge = item.status === 'critical' ? badge(t('status.critical'), 'critical') : item.status === 'warning' ? badge(t('status.warning'), 'warning') : badge(t('status.ok'), 'ok');
     const issueText = (item.issues || []).slice(0, 2).map(i => `${i.severity}: ${i.message}`).join(' · ');
     const scopes = [...item.scopes].filter(Boolean).sort().map(v => badge(v, 'scope')).join(' ');
     const platforms = [...item.platforms].filter(Boolean).sort().join(', ');
     return `<tr>
-      <td><div class="skill-name">${esc(item.names.join(' / '))} ${item.ambiguous ? badge('ambiguous', 'ambiguous') : ''}</div><div class="muted">${esc(item.description).slice(0, 140)}</div></td>
+      <td><div class="skill-name">${esc(item.names.join(' / '))} ${item.ambiguous ? badge(t('status.ambiguous'), 'ambiguous') : ''}</div><div class="muted">${esc(item.description).slice(0, 140)}</div></td>
       <td>${scopes}<div class="muted">${esc(platforms)}</div></td>
-      <td>${statusBadge}${item.is_symlink ? ' ' + badge('symlink', 'info') : ''}${issueText ? `<div class="muted">${esc(issueText)}</div>` : ''}</td>
+      <td>${statusBadge}${item.is_symlink ? ' ' + badge(t('status.symlink'), 'info') : ''}${issueText ? `<div class="muted">${esc(issueText)}</div>` : ''}</td>
       <td class="right">${fmt.format(item.line_count)}</td>
       <td class="right">${fmt.format(item.extra_files)}</td>
-      <td><div class="path">${esc([...item.paths].filter(Boolean).join('\n'))}</div><div class="path"><strong>real:</strong> ${esc(item.real_path)}</div></td>
+      <td><div class="path">${esc([...item.paths].filter(Boolean).join('\n'))}</div><div class="path"><strong>${esc(t('inventory.real'))}</strong> ${esc(item.real_path)}</div></td>
     </tr>`;
   }
 
@@ -735,37 +983,37 @@
     const collisions = model.duplicates.name_collisions || [];
     const overlaps = model.duplicates.description_overlaps || [];
     const items = [];
-    collisions.slice(0, 8).forEach(c => items.push(`<div class="compact-item"><div class="compact-title">${badge('Name collision', 'warning')} ${esc(c.name)}</div><div class="compact-meta">${(c.entries || []).length} distinct skill file(s)</div></div>`));
-    overlaps.slice(0, 8).forEach(o => items.push(`<div class="compact-item"><div class="compact-title">${badge(num(o.similarity) + '% overlap', 'info')} ${esc(o.skill_a)} ↔ ${esc(o.skill_b)}</div><div class="compact-meta">${esc((o.common_keywords || []).join(', '))}</div></div>`));
-    $('duplicatesList').innerHTML = items.join('') || '<div class="empty">No duplicate collisions or high description overlap.</div>';
+    collisions.slice(0, 8).forEach(c => items.push(`<div class="compact-item"><div class="compact-title">${badge(t('duplicates.nameCollision'), 'warning')} ${esc(c.name)}</div><div class="compact-meta">${esc(t('duplicates.distinct', { count: fmt.format((c.entries || []).length) }))}</div></div>`));
+    overlaps.slice(0, 8).forEach(o => items.push(`<div class="compact-item"><div class="compact-title">${badge(t('duplicates.overlap', { similarity: num(o.similarity) }), 'info')} ${esc(o.skill_a)} ↔ ${esc(o.skill_b)}</div><div class="compact-meta">${esc((o.common_keywords || []).join(', '))}</div></div>`));
+    $('duplicatesList').innerHTML = items.join('') || `<div class="empty">${esc(t('duplicates.empty'))}</div>`;
   }
 
   function renderPluginsCommands(model) {
     const plugins = model.scan.plugins || [];
     const commands = model.scan.commands || [];
     const items = [];
-    plugins.slice(0, 10).forEach(p => items.push(`<div class="compact-item"><div class="compact-title">${badge('plugin', 'plugin')} ${esc(p.name)}</div><div class="compact-meta">${esc(p.source)} · ${esc(p.scope)} · ${esc(p.version)}</div></div>`));
-    commands.slice(0, 10).forEach(c => items.push(`<div class="compact-item"><div class="compact-title">${badge('command', 'info')} /${esc(c.name)}</div><div class="compact-meta">${esc(c.scope)} · ${esc(c.path)}</div></div>`));
-    $('pluginsCommands').innerHTML = items.join('') || '<div class="empty">No plugin or command records found.</div>';
+    plugins.slice(0, 10).forEach(p => items.push(`<div class="compact-item"><div class="compact-title">${badge(t('plugins.plugin'), 'plugin')} ${esc(p.name)}</div><div class="compact-meta">${esc(p.source)} · ${esc(p.scope)} · ${esc(p.version)}</div></div>`));
+    commands.slice(0, 10).forEach(c => items.push(`<div class="compact-item"><div class="compact-title">${badge(t('plugins.command'), 'info')} /${esc(c.name)}</div><div class="compact-meta">${esc(c.scope)} · ${esc(c.path)}</div></div>`));
+    $('pluginsCommands').innerHTML = items.join('') || `<div class="empty">${esc(t('plugins.empty'))}</div>`;
   }
 
   function renderMeta(snap, model, snapshots) {
     $('heroMeta').innerHTML = `
-      <span class="meta-pill">Schema v${esc(snap.schema_version || 'legacy')}</span>
-      <span class="meta-pill">${esc(model.periodWeeks)} weeks</span>
-      <span class="meta-pill">Budget ${fmt.format(model.budget)} tokens</span>
-      <span class="meta-pill">${fmt.format(snapshots.length)} embedded snapshot(s)</span>`;
-    $('snapshotNote').textContent = `Current snapshot: ${snap.timestamp || 'unknown'} · static local HTML`;
+      <span class="meta-pill">${esc(t('meta.schema', { version: snap.schema_version || 'legacy' }))}</span>
+      <span class="meta-pill">${esc(t('meta.period', { weeks: model.periodWeeks }))}</span>
+      <span class="meta-pill">${esc(t('meta.snapshots', { count: fmt.format(snapshots.length) }))}</span>`;
+    $('snapshotNote').textContent = t('meta.current', { timestamp: snap.timestamp || 'unknown' });
   }
 
   function renderSnapshot(index, snapshots) {
     const snap = snapshots[index];
     if (!snap) {
-      $('app').innerHTML = '<div class="card empty">No snapshots embedded yet. Run: skills-janitor dashboard --output data/janitor-dashboard.html --weeks 52</div>';
+      $('app').innerHTML = `<div class="card empty">${esc(t('empty.noSnapshots'))}</div>`;
       return;
     }
     const model = normalizeSnapshot(snap);
     state.snap = snap;
+    state.currentIndex = index;
     state.skills = model.skills;
     state.inventory = model.inventory;
     renderMeta(snap, model, snapshots);
@@ -789,8 +1037,17 @@
     ['inventorySearch', 'inventoryStatus'].forEach(id => $(id).addEventListener('input', renderInventoryTable));
   }
 
+  function bindLanguageToggle() {
+    $('languageToggle').addEventListener('click', () => {
+      setLanguage(state.lang === 'en' ? 'zh' : 'en');
+    });
+  }
+
   function init() {
     const snapshots = getSnapshots();
+    state.snapshots = snapshots;
+    state.lang = detectInitialLang();
+    renderStaticText();
     if (snapshots.length > 1) {
       $('snapshotNav').style.display = 'block';
       $('snapshotSelect').innerHTML = snapshots.map((s, i) => `<option value="${i}">${esc(i + 1)} · ${esc(s.timestamp || 'unknown')}</option>`).join('');
@@ -798,6 +1055,7 @@
       $('snapshotSelect').addEventListener('change', (event) => renderSnapshot(Number(event.target.value), snapshots));
     }
     bindFilters();
+    bindLanguageToggle();
     renderSnapshot(snapshots.length - 1, snapshots);
     window.addEventListener('resize', () => {
       if (!state.snap) return;

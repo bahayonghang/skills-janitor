@@ -274,9 +274,9 @@ skills-janitor precheck ./local-skill --json
 | `>= 30%` | `MODERATE_OVERLAP`，安装前应人工确认 |
 | `< 30%` | `SAFE`，未发现显著重叠 |
 
-## `dashboard`：生成本地审计面板
+## `dashboard`：生成本地使用情况看板
 
-生成或更新自包含 HTML dashboard。
+生成或更新自包含 HTML dashboard。当前页面重点展示技能使用覆盖率、未使用 / 低频技能、健康分、lint 问题、重复项、插件和命令信息，并支持 EN / 中文切换。
 
 ```bash
 skills-janitor dashboard
@@ -290,10 +290,10 @@ skills-janitor dashboard --output target/tmp/janitor-dashboard.html --weeks 52 -
 | --- | --- | --- |
 | `--open` | 关闭 | 生成后用默认浏览器打开 |
 | `--output path` | `./data/janitor-dashboard.html` | 输出 HTML 路径 |
-| `--weeks N` | `52` | dashboard 中 usage/token 的分析周期 |
-| `--budget N` | `200000` | token 百分比预算 |
+| `--weeks N` | `52` | dashboard 中 usage 的分析周期 |
+| `--budget N` | `200000` | 兼容旧 snapshot 的 token 预算参数；当前 dashboard 不展示 token 成本模块 |
 
-dashboard 会追加快照并保留最近 20 次。页面包含 inventory、usage、tokens、lint 和 duplicate 数据，适合周期性维护。
+dashboard 会追加快照并保留最近 20 次。页面围绕 inventory、usage、lint、duplicate、plugins / commands 和健康分组织信息，适合周期性维护；旧 snapshot 中的 tokens 数据仍可兼容读取，但不再作为可视主模块。
 
 ## 推荐工作流
 

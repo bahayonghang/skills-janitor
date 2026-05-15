@@ -99,7 +99,7 @@ skills-janitor report
 
 - Critical 优先处理。
 - 重复项需要人工确认，避免误删有意保留的技能。
-- token 浪费和未使用技能可交给 `/janitor-tokens` 与 `/janitor-usage` 继续分析。
+- 未使用技能可交给 `/janitor-usage` 继续分析；上下文成本问题再交给 `/janitor-tokens` 单独评估。
 
 ## `/janitor-fix`：自动修复
 

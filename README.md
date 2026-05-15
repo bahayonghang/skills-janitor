@@ -56,7 +56,7 @@ If you do not have Rust/Cargo installed, download the prebuilt binary for your p
 /janitor-fix --prune --apply
 ```
 
-The dashboard is a local HTML audit view:
+The dashboard is a local HTML usage-and-health view with an EN / 中文 language toggle:
 
 ```bash
 skills-janitor dashboard --open

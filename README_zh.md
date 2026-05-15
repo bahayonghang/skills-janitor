@@ -56,7 +56,7 @@ just install --target kiro
 /janitor-fix --prune --apply
 ```
 
-Dashboard 是本地 HTML 审计视图：
+Dashboard 是本地 HTML 使用情况与健康度看板，支持 EN / 中文切换：
 
 ```bash
 skills-janitor dashboard --open

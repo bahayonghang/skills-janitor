@@ -21,4 +21,12 @@ fn dashboard_initializes_from_embedded_template_outside_repo() {
     let html = fs::read_to_string(output).unwrap();
     assert!(html.contains(r#"<script type="application/json" id="snapshotData">"#));
     assert!(html.contains(r#""schema_version""#));
+    assert!(html.contains(r#"id="languageToggle""#));
+    assert!(html.contains(r#"const i18n = {"#));
+    assert!(html.contains("Skills Usage Dashboard"));
+    assert!(html.contains("技能使用看板"));
+    assert!(!html.contains("Token Cost"));
+    assert!(!html.contains("Top waste"));
+    assert!(!html.contains("token waste"));
+    assert!(!html.contains("Budget "));
 }
