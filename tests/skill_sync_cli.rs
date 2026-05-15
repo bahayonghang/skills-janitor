@@ -10,7 +10,7 @@ fn install_skills_copies_bundled_skills_to_default_and_extra_project_targets() {
     write_skill(source.path(), "alpha");
     write_skill(source.path(), "beta");
 
-    Command::cargo_bin("skills-janitor")
+    Command::cargo_bin("skillscope")
         .unwrap()
         .current_dir(project.path())
         .arg("install-skills")

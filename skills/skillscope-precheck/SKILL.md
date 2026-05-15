@@ -1,5 +1,5 @@
 ---
-name: janitor-precheck
+name: skillscope-precheck
 description: "Check if a new skill overlaps with your existing ones before installing. Use when the user wants to evaluate a skill before adding it, check for duplicates pre-install, or verify a GitHub skill won't conflict."
 metadata:
   version: 2.0.1
@@ -10,13 +10,13 @@ metadata:
 Before doing anything else, check whether the Rust CLI is installed:
 
 ```bash
-skills-janitor --version
+skillscope --version
 ```
 
 If it is not installed, stop and tell the user to install it with Cargo:
 
 ```bash
-cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+cargo install skillscope --git https://github.com/bahayonghang/skillscope --bin skillscope --locked --force
 ```
 
 If the user does not have Rust/Cargo, tell them to download the latest GitHub Release binary for their platform instead. Do not fall back to Python, Bash, or curl scripts unless the user explicitly asks for legacy mode.
@@ -34,7 +34,7 @@ Do NOT run the CLI without a source argument.
 ## How to Run
 
 ```bash
-skills-janitor precheck <github-url-or-path> [--json]
+skillscope precheck <github-url-or-path> [--json]
 ```
 
 Legacy fallback only when explicitly requested:
@@ -62,7 +62,7 @@ bash <scripts_dir>/precheck.sh <github-url-or-path> [--json]
 ## Output
 
 ```
-=== Skills Janitor - Pre-Install Check ===
+=== Skillscope - Pre-Install Check ===
 
   Checking: marketing-seo-v2
   Keywords: seo, audit, ranking, technical, meta, tags
@@ -85,5 +85,5 @@ bash <scripts_dir>/precheck.sh <github-url-or-path> [--json]
 
 ## Related Skills
 
-- For checking existing duplicates: `/janitor-report`
-- For full inventory: `/janitor-audit`
+- For checking existing duplicates: `/skillscope-report`
+- For full inventory: `/skillscope-audit`

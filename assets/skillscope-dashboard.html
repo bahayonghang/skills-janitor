@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- skills-janitor dashboard template v2.2.0 -->
+<!-- skillscope dashboard template v2.2.0 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -348,7 +348,7 @@
     </section>
   </main>
 
-  <div class="footer"><span data-i18n="footer.generated">Generated locally by</span> <strong>skills-janitor dashboard</strong>. <span data-i18n="footer.offline">No CDN, no external network dependencies.</span></div>
+  <div class="footer"><span data-i18n="footer.generated">Generated locally by</span> <strong>skillscope dashboard</strong>. <span data-i18n="footer.offline">No CDN, no external network dependencies.</span></div>
 </div>
 
 <!-- Snapshot data storage - must be before main script -->
@@ -429,7 +429,7 @@
       'meta.period': '{weeks} weeks',
       'meta.snapshots': '{count} embedded snapshot(s)',
       'meta.current': 'Current snapshot: {timestamp} · static local HTML',
-      'empty.noSnapshots': 'No snapshots embedded yet. Run: skills-janitor dashboard --output data/janitor-dashboard.html --weeks 52',
+      'empty.noSnapshots': 'No snapshots embedded yet. Run: skillscope dashboard --output data/skillscope-dashboard.html --weeks 52',
       'status.all': 'All statuses',
       'status.critical': 'Critical',
       'status.warning': 'Warning',
@@ -520,7 +520,7 @@
       'meta.period': '{weeks} 周',
       'meta.snapshots': '{count} 个嵌入快照',
       'meta.current': '当前快照：{timestamp} · 静态本地 HTML',
-      'empty.noSnapshots': '尚未嵌入快照。运行：skills-janitor dashboard --output data/janitor-dashboard.html --weeks 52',
+      'empty.noSnapshots': '尚未嵌入快照。运行：skillscope dashboard --output data/skillscope-dashboard.html --weeks 52',
       'status.all': '全部状态',
       'status.critical': '严重',
       'status.warning': '警告',
@@ -567,7 +567,7 @@
   }
   function detectInitialLang() {
     try {
-      const saved = localStorage.getItem('skillsJanitorDashboardLang');
+      const saved = localStorage.getItem('skillscopeDashboardLang');
       if (saved === 'zh' || saved === 'en') return saved;
     } catch (_err) {}
     return String(navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
@@ -590,7 +590,7 @@
   function setLanguage(lang, persist = true) {
     state.lang = lang === 'zh' ? 'zh' : 'en';
     if (persist) {
-      try { localStorage.setItem('skillsJanitorDashboardLang', state.lang); } catch (_err) {}
+      try { localStorage.setItem('skillscopeDashboardLang', state.lang); } catch (_err) {}
     }
     renderStaticText();
     renderSnapshot(state.snapshots.length ? state.currentIndex : -1, state.snapshots);

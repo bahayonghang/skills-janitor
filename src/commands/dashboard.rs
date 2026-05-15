@@ -9,7 +9,7 @@ use crate::analysis::dupes;
 use crate::analysis::lint;
 use crate::analysis::tokens;
 use crate::cli::DashboardArgs;
-use crate::domain::context::JanitorContext;
+use crate::domain::context::SkillscopeContext;
 use crate::domain::paths::PlatformPaths;
 use crate::infra::output;
 
@@ -19,7 +19,7 @@ const MAX_SNAPSHOTS: usize = 20;
 const DASHBOARD_SCHEMA_VERSION: u32 = 2;
 const EMBEDDED_TEMPLATE: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/assets/janitor-dashboard.html"
+    "/assets/skillscope-dashboard.html"
 ));
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -57,7 +57,7 @@ fn update_dashboard_with_paths(
     weeks: u32,
     budget: u64,
 ) -> Result<PathBuf> {
-    let dashboard = output.unwrap_or_else(|| paths.cwd.join("janitor-dashboard.html"));
+    let dashboard = output.unwrap_or_else(|| paths.cwd.join("skillscope-dashboard.html"));
     if let Some(parent) = dashboard.parent() {
         fs::create_dir_all(parent)?;
     }
@@ -74,7 +74,7 @@ fn update_dashboard_with_paths(
         fs::write(&dashboard, EMBEDDED_TEMPLATE)?;
     }
 
-    let mut context = JanitorContext::with_paths(paths.clone())?;
+    let mut context = SkillscopeContext::with_paths(paths.clone())?;
     let snapshot = build_snapshot_from_context(&mut context, weeks, budget)?;
 
     let html = fs::read_to_string(&dashboard)?;
@@ -85,7 +85,7 @@ fn update_dashboard_with_paths(
 }
 
 fn build_snapshot_from_context(
-    context: &mut JanitorContext,
+    context: &mut SkillscopeContext,
     weeks: u32,
     budget: u64,
 ) -> Result<DashboardSnapshot> {
@@ -232,7 +232,7 @@ mod tests {
         )
         .unwrap();
 
-        let mut context = JanitorContext::with_paths(paths.clone()).unwrap();
+        let mut context = SkillscopeContext::with_paths(paths.clone()).unwrap();
         fs::remove_dir_all(&paths.claude_user_skills).unwrap();
         let snapshot = build_snapshot_from_context(&mut context, 4, 200_000).unwrap();
 

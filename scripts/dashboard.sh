@@ -1,4 +1,4 @@
 #!/bin/bash
-# Legacy compatibility wrapper. Prefer: skills-janitor dashboard --open
+# Legacy compatibility wrapper. Prefer: skillscope dashboard --open
 set -euo pipefail
-exec skills-janitor dashboard --open "$@"
+exec skillscope dashboard --open "$@"

@@ -116,7 +116,7 @@ fn lint_record(
     cached_content: Option<&str>,
     issues: &mut Vec<LintIssue>,
 ) {
-    if record.folder == "skills-janitor" {
+    if record.folder == "skillscope" {
         return;
     }
     if record.is_symlink && record.symlink_target.starts_with("BROKEN:") {
@@ -334,7 +334,7 @@ fn push(
 }
 
 pub fn print_lint_report(report: &LintReport) {
-    println!("=== Skills Janitor - Lint Report ===");
+    println!("=== Skillscope - Lint Report ===");
     println!();
     for issue in &report.issues {
         let label = match issue.severity {

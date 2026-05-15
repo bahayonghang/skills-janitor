@@ -1,4 +1,4 @@
 #!/bin/bash
-# Legacy compatibility wrapper. Prefer: skills-janitor usage
+# Legacy compatibility wrapper. Prefer: skillscope usage
 set -euo pipefail
-exec skills-janitor usage "$@"
+exec skillscope usage "$@"

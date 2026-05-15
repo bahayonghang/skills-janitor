@@ -57,7 +57,7 @@ pub fn build_fix_report(dry_run: bool, prune: bool) -> Result<FixReport> {
     for entry in &scan.skills {
         let record = &entry.record;
         let path = entry.dir.as_path();
-        if record.folder == "skills-janitor" {
+        if record.folder == "skillscope" {
             continue;
         }
         if record.is_symlink && record.symlink_target.starts_with("BROKEN:") {
@@ -114,7 +114,7 @@ pub fn build_fix_report(dry_run: bool, prune: bool) -> Result<FixReport> {
                     .and_then(|n| n.to_str())
                     .unwrap_or_default()
                     .to_string();
-                if name == "skills-janitor" {
+                if name == "skillscope" {
                     continue;
                 }
                 let metadata = fs::symlink_metadata(&dir).ok();
@@ -375,7 +375,7 @@ fn replace_line_starting(content: &str, prefix: &str, replacement: &str) -> Stri
 }
 
 fn print_fix_report(report: &FixReport) {
-    println!("=== Skills Janitor - Auto-Fix ===");
+    println!("=== Skillscope - Auto-Fix ===");
     if report.dry_run {
         println!("Mode: DRY RUN (use --apply to make changes)");
     } else {

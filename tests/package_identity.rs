@@ -28,14 +28,19 @@ fn package_metadata_has_single_root_package() {
         .get("name")
         .and_then(Value::as_str)
         .expect("package missing name");
-    let removed_package_name = ["skills-janitor", "cli"].join("-");
+    let legacy_package_name = ["skills", "janitor"].join("-");
+    let removed_package_names = [
+        ["skillscope", "cli"].join("-"),
+        legacy_package_name.clone(),
+        [legacy_package_name, "cli".to_owned()].join("-"),
+    ];
 
-    assert_eq!(package_name, "skills-janitor");
+    assert_eq!(package_name, "skillscope");
     assert!(
         packages
             .iter()
             .filter_map(|package| package.get("name").and_then(Value::as_str))
-            .all(|name| name != removed_package_name),
-        "removed package must not remain in package metadata"
+            .all(|name| !removed_package_names.iter().any(|removed| removed == name)),
+        "removed package names must not remain in package metadata"
     );
 }

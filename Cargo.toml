@@ -1,14 +1,14 @@
 [package]
-name = "skills-janitor"
+name = "skillscope"
 version = "2.0.2"
 edition = "2024"
 rust-version = "1.90"
 license = "MIT"
-description = "Cross-platform CLI for auditing and maintaining Claude Code and Codex skills."
-repository = "https://github.com/bahayonghang/skills-janitor"
+description = "Local skill audit, usage analytics, health checks, and HTML dashboard for Claude Code and Codex skills."
+repository = "https://github.com/bahayonghang/skillscope"
 
 [[bin]]
-name = "skills-janitor"
+name = "skillscope"
 path = "src/main.rs"
 
 [dependencies]

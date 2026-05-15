@@ -1,3 +1,3 @@
 #!/bin/bash
 # Legacy note: path detection moved into the cross-platform Rust CLI.
-# Use `skills-janitor <subcommand>` directly.
+# Use `skillscope <subcommand>` directly.

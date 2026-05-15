@@ -1,5 +1,5 @@
 ---
-name: janitor-usage
+name: skillscope-usage
 description: "Show which skills you use and which you never use. Use when the user asks about skill usage, unused skills, or wants to know which skills are active."
 metadata:
   version: 2.0.1
@@ -10,13 +10,13 @@ metadata:
 Before doing anything else, check whether the Rust CLI is installed:
 
 ```bash
-skills-janitor --version
+skillscope --version
 ```
 
 If it is not installed, stop and tell the user to install it with Cargo:
 
 ```bash
-cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+cargo install skillscope --git https://github.com/bahayonghang/skillscope --bin skillscope --locked --force
 ```
 
 If the user does not have Rust/Cargo, tell them to download the latest GitHub Release binary for their platform instead. Do not fall back to Python, Bash, or curl scripts unless the user explicitly asks for legacy mode.
@@ -27,7 +27,7 @@ Parse your Claude Code conversation history to see which skills you actually inv
 ## How to Run
 
 ```bash
-skills-janitor usage [--weeks N] [--json]
+skillscope usage [--weeks N] [--json]
 ```
 
 Legacy fallback only when explicitly requested:
@@ -42,7 +42,7 @@ bash <scripts_dir>/usage.sh [--weeks N] [--json]
 ## What It Detects
 
 ### Explicit Invocations
-Slash commands starting with `/skill-name` (e.g., `/n8n-workflows`, `/janitor-audit`). Most reliable signal.
+Slash commands starting with `/skill-name` (e.g., `/n8n-workflows`, `/skillscope-audit`). Most reliable signal.
 
 ### Estimated Invocations
 Natural language matching against skill description keywords. Higher threshold (50%) to avoid false positives. Labeled as "estimated" in output.
@@ -50,7 +50,7 @@ Natural language matching against skill description keywords. Higher threshold (
 ## Example Output
 
 ```
-=== Skills Janitor - Usage Report ===
+=== Skillscope - Usage Report ===
 Period: 2026-02-24 to 2026-03-24 (4 weeks)
 
 --- Most Used ---
@@ -74,15 +74,15 @@ Results are saved to `data/usage-history.json`, keeping the last 12 weeks for tr
 
 ## Related Skills
 
-- For the integrated visual dashboard: `skills-janitor dashboard --open`
-- For finding better alternatives: `/janitor-search`
-- For comparing against the market: `/janitor-search --compare`
-- For removing unused skills: `/janitor-fix --prune`
+- For the integrated visual dashboard: `skillscope dashboard --open`
+- For finding better alternatives: `/skillscope-search`
+- For comparing against the market: `/skillscope-search --compare`
+- For removing unused skills: `/skillscope-fix --prune`
 
 ## Dashboard Troubleshooting
 
-Use `skills-janitor dashboard --open` for browser reports. Only add `--weeks N` when the user explicitly asks for a custom analysis period.
+Use `skillscope dashboard --open` for browser reports. Only add `--weeks N` when the user explicitly asks for a custom analysis period.
 
-If a dashboard command fails with `unexpected argument '--weeks'`, retry once without `--weeks` and report that the installed CLI is stale; users should update to `skills-janitor` 2.0.1 or newer.
+If a dashboard command fails with `unexpected argument '--weeks'`, retry once without `--weeks` and report that the installed CLI is stale; users should update to `skillscope` 2.0.1 or newer.
 
-If it fails with `Dashboard template not found`, tell the user to install or update to the embedded-template CLI build (`skills-janitor` 2.0.1 or newer). Raw `scan --json` is a fallback, not the main dashboard path.
+If it fails with `Dashboard template not found`, tell the user to install or update to the embedded-template CLI build (`skillscope` 2.0.1 or newer). Raw `scan --json` is a fallback, not the main dashboard path.

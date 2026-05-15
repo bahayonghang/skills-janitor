@@ -72,7 +72,7 @@ pub fn build_token_report_from_scan(
 
     let mut skills = entries
         .iter()
-        .filter(|entry| entry.record.has_skill_file && entry.record.folder != "skills-janitor")
+        .filter(|entry| entry.record.has_skill_file && entry.record.folder != "skillscope")
         .map(|entry| token_cost(entry, budget, used_names.contains(&entry.record.folder)))
         .collect::<Vec<_>>();
     skills.sort_by(|a, b| b.tokens.cmp(&a.tokens).then(a.name.cmp(&b.name)));
@@ -122,7 +122,7 @@ fn percent(n: u64, d: u64) -> f64 {
 }
 
 fn print_token_report(report: &TokenReport) {
-    println!("=== Skills Janitor - Context Window Cost ===");
+    println!("=== Skillscope - Context Window Cost ===");
     println!("Budget: {} tokens", report.budget);
     println!();
     println!("  {:<35} {:>8} {:>8} Used?", "Skill", "Tokens", "Budget");

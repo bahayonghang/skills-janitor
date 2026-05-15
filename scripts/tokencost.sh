@@ -1,4 +1,4 @@
 #!/bin/bash
-# Legacy compatibility wrapper. Prefer: skills-janitor tokens
+# Legacy compatibility wrapper. Prefer: skillscope tokens
 set -euo pipefail
-exec skills-janitor tokens "$@"
+exec skillscope tokens "$@"

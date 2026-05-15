@@ -1,8 +1,8 @@
 #!/bin/bash
-# Legacy compatibility wrapper. Prefer: skills-janitor search / skills-janitor compare
+# Legacy compatibility wrapper. Prefer: skillscope search / skillscope compare
 set -euo pipefail
 if [[ "${1:-}" == "--compare" ]]; then
   shift
-  exec skills-janitor compare "$@"
+  exec skillscope compare "$@"
 fi
-exec skills-janitor search "$@"
+exec skillscope search "$@"

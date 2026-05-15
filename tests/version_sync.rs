@@ -1,27 +1,27 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const JANITOR_AUDIT_SKILL: &str = "skills/janitor-audit/SKILL.md";
+const SKILLSCOPE_AUDIT_SKILL: &str = "skills/skillscope-audit/SKILL.md";
 
 #[test]
-fn janitor_audit_skill_version_matches_package_version() {
+fn skillscope_audit_skill_version_matches_package_version() {
     let root = manifest_dir();
     let cargo_version = read_package_version(&root.join("Cargo.toml"));
-    let skill_version = read_janitor_audit_skill_version(&root.join(JANITOR_AUDIT_SKILL));
+    let skill_version = read_skillscope_audit_skill_version(&root.join(SKILLSCOPE_AUDIT_SKILL));
 
     assert_eq!(
         skill_version, cargo_version,
-        "{JANITOR_AUDIT_SKILL} metadata.version must match Cargo.toml package.version"
+        "{SKILLSCOPE_AUDIT_SKILL} metadata.version must match Cargo.toml package.version"
     );
 }
 
 #[test]
-#[ignore = "mutates the janitor-audit skill frontmatter to match Cargo.toml"]
-fn sync_janitor_audit_skill_version() {
+#[ignore = "mutates the skillscope-audit skill frontmatter to match Cargo.toml"]
+fn sync_skillscope_audit_skill_version() {
     let root = manifest_dir();
     let cargo_version = read_package_version(&root.join("Cargo.toml"));
-    let skill_path = root.join(JANITOR_AUDIT_SKILL);
-    let skill = fs::read_to_string(&skill_path).expect("failed to read janitor-audit skill");
+    let skill_path = root.join(SKILLSCOPE_AUDIT_SKILL);
+    let skill = fs::read_to_string(&skill_path).expect("failed to read skillscope-audit skill");
     let updated = rewrite_frontmatter_version(&skill, &cargo_version);
 
     if updated != skill {
@@ -29,9 +29,9 @@ fn sync_janitor_audit_skill_version() {
     }
 
     assert_eq!(
-        read_janitor_audit_skill_version(&skill_path),
+        read_skillscope_audit_skill_version(&skill_path),
         cargo_version,
-        "{JANITOR_AUDIT_SKILL} metadata.version must match Cargo.toml after sync"
+        "{SKILLSCOPE_AUDIT_SKILL} metadata.version must match Cargo.toml after sync"
     );
 }
 
@@ -63,8 +63,8 @@ fn read_package_version(path: &Path) -> String {
     panic!("Cargo.toml is missing [package].version");
 }
 
-fn read_janitor_audit_skill_version(path: &Path) -> String {
-    let skill = fs::read_to_string(path).expect("failed to read janitor-audit skill");
+fn read_skillscope_audit_skill_version(path: &Path) -> String {
+    let skill = fs::read_to_string(path).expect("failed to read skillscope-audit skill");
     read_frontmatter_version(&skill)
 }
 
@@ -75,7 +75,7 @@ fn read_frontmatter_version(skill: &str) -> String {
         }
     }
 
-    panic!("{JANITOR_AUDIT_SKILL} frontmatter is missing metadata.version");
+    panic!("{SKILLSCOPE_AUDIT_SKILL} frontmatter is missing metadata.version");
 }
 
 fn rewrite_frontmatter_version(skill: &str, cargo_version: &str) -> String {
@@ -108,7 +108,7 @@ fn rewrite_frontmatter_version(skill: &str, cargo_version: &str) -> String {
 
     assert!(
         replaced,
-        "{JANITOR_AUDIT_SKILL} frontmatter is missing metadata.version"
+        "{SKILLSCOPE_AUDIT_SKILL} frontmatter is missing metadata.version"
     );
 
     let mut updated = lines.join("\n");

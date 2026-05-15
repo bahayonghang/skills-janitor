@@ -58,7 +58,7 @@ impl PlatformPaths {
             data_dir: home
                 .join(".claude")
                 .join("skills")
-                .join("skills-janitor")
+                .join("skillscope")
                 .join("data"),
             home,
             cwd,
@@ -80,7 +80,7 @@ impl PlatformPaths {
             data_dir: home
                 .join(".claude")
                 .join("skills")
-                .join("skills-janitor")
+                .join("skillscope")
                 .join("data"),
             home,
             cwd,

@@ -1,5 +1,5 @@
 ---
-name: janitor-fix
+name: skillscope-fix
 description: "Automatically fix skill problems (safe preview first). Also use with --prune to find and remove broken symlinks, empty directories, and orphaned skills."
 metadata:
   version: 2.0.1
@@ -10,13 +10,13 @@ metadata:
 Before doing anything else, check whether the Rust CLI is installed:
 
 ```bash
-skills-janitor --version
+skillscope --version
 ```
 
 If it is not installed, stop and tell the user to install it with Cargo:
 
 ```bash
-cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+cargo install skillscope --git https://github.com/bahayonghang/skillscope --bin skillscope --locked --force
 ```
 
 If the user does not have Rust/Cargo, tell them to download the latest GitHub Release binary for their platform instead. Do not fall back to Python, Bash, or curl scripts unless the user explicitly asks for legacy mode.
@@ -27,10 +27,10 @@ Automatically fix common skill issues. Dry-run by default - shows what would cha
 ## How to Run
 
 ```bash
-skills-janitor fix                 # preview fixes
-skills-janitor fix --apply          # apply fixes
-skills-janitor fix --prune          # find broken/orphaned skills
-skills-janitor fix --prune --apply  # remove broken skills
+skillscope fix                 # preview fixes
+skillscope fix --apply          # apply fixes
+skillscope fix --prune          # find broken/orphaned skills
+skillscope fix --prune --apply  # remove broken skills
 ```
 
 Legacy fallback only when explicitly requested:
@@ -65,6 +65,6 @@ Dry-run by default. Pass `--apply` to actually remove them.
 
 ## Related Skills
 
-- For finding issues: `/janitor-report`
-- For usage analytics: `/janitor-usage`
-- For token cost: `/janitor-tokens`
+- For finding issues: `/skillscope-report`
+- For usage analytics: `/skillscope-usage`
+- For token cost: `/skillscope-tokens`

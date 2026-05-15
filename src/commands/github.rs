@@ -158,7 +158,7 @@ fn search_github(keyword: &str, limit: usize) -> Result<SearchReport> {
 
 fn github_get_json(url: &str) -> Result<serde_json::Value> {
     let mut request = ureq::get(url)
-        .header("User-Agent", "skills-janitor")
+        .header("User-Agent", "skillscope")
         .header("Accept", "application/vnd.github+json");
     if let Ok(token) = std::env::var("GITHUB_TOKEN")
         && !token.trim().is_empty()
@@ -243,7 +243,7 @@ fn load_skill_source(source: &str) -> Result<String> {
     if source.starts_with("http://") || source.starts_with("https://") {
         let raw = github_raw_url(source);
         let mut request = ureq::get(&raw)
-            .header("User-Agent", "skills-janitor")
+            .header("User-Agent", "skillscope")
             .header("Accept", "text/plain");
         if let Ok(token) = std::env::var("GITHUB_TOKEN")
             && !token.trim().is_empty()
@@ -290,7 +290,7 @@ fn infer_name_from_source(source: &str) -> String {
 }
 
 fn print_search_report(report: &SearchReport) {
-    println!("=== Skills Janitor - GitHub Search ===");
+    println!("=== Skillscope - GitHub Search ===");
     println!("Keyword: {}", report.keyword);
     println!();
     if report.results.is_empty() {
@@ -306,7 +306,7 @@ fn print_search_report(report: &SearchReport) {
 }
 
 fn print_compare_report(report: &CompareReport) {
-    println!("=== Skills Janitor - Market Comparison ===");
+    println!("=== Skillscope - Market Comparison ===");
     println!("Skill: {}", report.skill);
     println!("Description: {}", report.description);
     println!(
@@ -328,7 +328,7 @@ fn print_compare_report(report: &CompareReport) {
 }
 
 fn print_precheck_report(report: &PrecheckReport) {
-    println!("=== Skills Janitor - Pre-Install Check ===");
+    println!("=== Skillscope - Pre-Install Check ===");
     println!();
     println!("  Checking: {}", report.new_skill.name);
     println!("  Source: {}", report.source);

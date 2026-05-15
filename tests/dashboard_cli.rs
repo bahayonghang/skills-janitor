@@ -6,9 +6,9 @@ use assert_cmd::Command;
 fn dashboard_initializes_from_embedded_template_outside_repo() {
     let cwd = tempfile::tempdir().unwrap();
     let output_dir = tempfile::tempdir().unwrap();
-    let output = output_dir.path().join("janitor-dashboard.html");
+    let output = output_dir.path().join("skillscope-dashboard.html");
 
-    Command::cargo_bin("skills-janitor")
+    Command::cargo_bin("skillscope")
         .unwrap()
         .current_dir(cwd.path())
         .args(["dashboard", "--output"])

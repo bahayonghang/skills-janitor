@@ -170,7 +170,7 @@ fn scan_jsonl_file(
     for line in BufReader::new(file).lines().map_while(Result::ok) {
         if !(line.contains("skill")
             || line.contains("Skill")
-            || line.contains("/janitor")
+            || line.contains("/skillscope")
             || line.contains("<skill>")
             || line.contains("\"name\":\""))
         {
@@ -270,6 +270,7 @@ fn timestamp_to_system_time(timestamp: Timestamp) -> std::time::SystemTime {
 }
 
 fn persist_usage_history(paths: &PlatformPaths, report: &UsageReport) -> Result<()> {
+    copy_legacy_usage_history_if_needed(paths)?;
     fs::create_dir_all(&paths.data_dir)?;
     let path = paths.data_dir.join("usage-history.json");
     let mut history = if path.is_file() {
@@ -288,8 +289,30 @@ fn persist_usage_history(paths: &PlatformPaths, report: &UsageReport) -> Result<
     Ok(())
 }
 
+fn copy_legacy_usage_history_if_needed(paths: &PlatformPaths) -> Result<()> {
+    let new_path = paths.data_dir.join("usage-history.json");
+    if new_path.exists() {
+        return Ok(());
+    }
+
+    let legacy_dir = paths
+        .home
+        .join(".claude")
+        .join("skills")
+        .join(["skills", "janitor"].join("-"))
+        .join("data");
+    let legacy_path = legacy_dir.join("usage-history.json");
+    if !legacy_path.is_file() {
+        return Ok(());
+    }
+
+    fs::create_dir_all(&paths.data_dir)?;
+    fs::copy(legacy_path, new_path)?;
+    Ok(())
+}
+
 fn print_usage_report(report: &UsageReport) {
-    println!("=== Skills Janitor - Usage Report ===");
+    println!("=== Skillscope - Usage Report ===");
     println!("Period: last {} weeks", report.period_weeks);
     println!();
     let pct = percent(report.active_skills, report.total_skills);
@@ -317,5 +340,49 @@ fn percent(n: usize, d: usize) -> usize {
         0
     } else {
         ((n as f64 / d as f64) * 100.0).round() as usize
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn report(active_skills: usize) -> UsageReport {
+        UsageReport {
+            period_weeks: 4,
+            active_skills,
+            total_skills: 1,
+            unused_skills: 1usize.saturating_sub(active_skills),
+            most_used: None,
+            skills: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn persist_usage_history_copies_legacy_history_once() {
+        let home = tempfile::tempdir().unwrap();
+        let cwd = tempfile::tempdir().unwrap();
+        let paths = PlatformPaths::from_home_and_cwd(home.path(), cwd.path());
+        let legacy_path = home
+            .path()
+            .join(".claude")
+            .join("skills")
+            .join(["skills", "janitor"].join("-"))
+            .join("data")
+            .join("usage-history.json");
+        fs::create_dir_all(legacy_path.parent().unwrap()).unwrap();
+        fs::write(
+            &legacy_path,
+            serde_json::to_string_pretty(&vec![report(0)]).unwrap(),
+        )
+        .unwrap();
+
+        persist_usage_history(&paths, &report(1)).unwrap();
+
+        let migrated = fs::read_to_string(paths.data_dir.join("usage-history.json")).unwrap();
+        let history: Vec<UsageReport> = serde_json::from_str(&migrated).unwrap();
+        assert_eq!(history.len(), 2);
+        assert_eq!(history[0].active_skills, 0);
+        assert_eq!(history[1].active_skills, 1);
     }
 }

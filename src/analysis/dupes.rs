@@ -72,7 +72,7 @@ pub fn build_duplicate_report() -> Result<DuplicateReport> {
 pub fn build_duplicate_report_from_records(records: &[SkillRecord]) -> DuplicateReport {
     let mut by_realpath: BTreeMap<String, CanonicalSkill> = BTreeMap::new();
     for record in records {
-        if record.folder == "skills-janitor" || !record.has_skill_file {
+        if record.folder == "skillscope" || !record.has_skill_file {
             continue;
         }
         let key = if record.real_path.is_empty() {
@@ -182,7 +182,7 @@ pub fn keyword_vec(text: &str) -> Vec<String> {
 }
 
 pub fn print_duplicate_report(report: &DuplicateReport) {
-    println!("=== Skills Janitor - Duplicate Detection ===");
+    println!("=== Skillscope - Duplicate Detection ===");
     println!();
     println!("Total skill records: {}", report.total_records);
     println!(
@@ -249,7 +249,7 @@ pub fn installed_keyword_map(
 ) -> Vec<(String, String, HashSet<String>, String)> {
     let mut out = Vec::new();
     for record in records {
-        if !record.has_skill_file || record.folder == "skills-janitor" {
+        if !record.has_skill_file || record.folder == "skillscope" {
             continue;
         }
         let mut keywords = extract_keywords(&record.description);
@@ -274,7 +274,7 @@ pub fn installed_keyword_map_from_entries(
     let mut out = Vec::new();
     for entry in entries {
         let record = &entry.record;
-        if !record.has_skill_file || record.folder == "skills-janitor" {
+        if !record.has_skill_file || record.folder == "skillscope" {
             continue;
         }
         let mut keywords = extract_keywords(&record.description);

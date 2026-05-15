@@ -1,4 +1,4 @@
 #!/bin/bash
-# Legacy compatibility wrapper. Prefer: skills-janitor report
+# Legacy compatibility wrapper. Prefer: skillscope report
 set -euo pipefail
-exec skills-janitor report "$@"
+exec skillscope report "$@"

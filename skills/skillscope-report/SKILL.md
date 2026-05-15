@@ -1,5 +1,5 @@
 ---
-name: janitor-report
+name: skillscope-report
 description: "Full health check of all your skills in one report. Use when the user wants to check for errors, find duplicates, detect broken skills, or get a complete overview of skill health."
 metadata:
   version: 2.0.1
@@ -10,13 +10,13 @@ metadata:
 Before doing anything else, check whether the Rust CLI is installed:
 
 ```bash
-skills-janitor --version
+skillscope --version
 ```
 
 If it is not installed, stop and tell the user to install it with Cargo:
 
 ```bash
-cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+cargo install skillscope --git https://github.com/bahayonghang/skillscope --bin skillscope --locked --force
 ```
 
 If the user does not have Rust/Cargo, tell them to download the latest GitHub Release binary for their platform instead. Do not fall back to Python, Bash, or curl scripts unless the user explicitly asks for legacy mode.
@@ -29,13 +29,13 @@ Generate a comprehensive health report combining inventory, quality checks, dupl
 Run the unified health report:
 
 ```bash
-skills-janitor report
+skillscope report
 ```
 
 For machine-readable output:
 
 ```bash
-skills-janitor report --json
+skillscope report --json
 ```
 
 Legacy fallback only when explicitly requested:
@@ -48,16 +48,16 @@ bash <scripts_dir>/detect_dupes.sh
 
 ## What It Covers
 
-### Inventory (`skills-janitor scan`)
+### Inventory (`skillscope scan`)
 - All skills across user, project, plugin, and account scopes
 - Symlink status, frontmatter fields, line counts
 
-### Quality Checks (`skills-janitor report`)
+### Quality Checks (`skillscope report`)
 - **Critical**: Broken symlinks, missing SKILL.md, missing frontmatter
 - **Warning**: Missing/empty name or description, description too short/long, missing version
 - **Info**: No body content, no Gotchas section, large files
 
-### Duplicate Detection (`skills-janitor report`)
+### Duplicate Detection (`skillscope report`)
 - Keyword overlap analysis using Jaccard similarity
 - Flags pairs with >30% overlap
 - Shows shared keywords and scopes
@@ -82,23 +82,23 @@ Present a unified report with severity levels:
 
 ### Recommended Actions
 For each issue found, suggest:
-- Broken symlinks: `/janitor-fix --prune`
-- Quality issues: `/janitor-fix`
+- Broken symlinks: `/skillscope-fix --prune`
+- Quality issues: `/skillscope-fix`
 - Duplicates: manual review, consider removing one
-- Token waste: `/janitor-tokens`
+- Token waste: `/skillscope-tokens`
 
 ## Related Skills
 
-- For the integrated visual dashboard: `skills-janitor dashboard --open`
-- For inventory only: `/janitor-audit`
-- For auto-fixing: `/janitor-fix`
-- For usage analytics: `/janitor-usage`
-- For token cost: `/janitor-tokens`
+- For the integrated visual dashboard: `skillscope dashboard --open`
+- For inventory only: `/skillscope-audit`
+- For auto-fixing: `/skillscope-fix`
+- For usage analytics: `/skillscope-usage`
+- For token cost: `/skillscope-tokens`
 
 ## Dashboard Troubleshooting
 
-Use `skills-janitor dashboard --open` for browser reports. Only add `--weeks N` when the user explicitly asks for a custom analysis period.
+Use `skillscope dashboard --open` for browser reports. Only add `--weeks N` when the user explicitly asks for a custom analysis period.
 
-If a dashboard command fails with `unexpected argument '--weeks'`, retry once without `--weeks` and report that the installed CLI is stale; users should update to `skills-janitor` 2.0.1 or newer.
+If a dashboard command fails with `unexpected argument '--weeks'`, retry once without `--weeks` and report that the installed CLI is stale; users should update to `skillscope` 2.0.1 or newer.
 
-If it fails with `Dashboard template not found`, tell the user to install or update to the embedded-template CLI build (`skills-janitor` 2.0.1 or newer). Raw `scan --json` is a fallback, not the main dashboard path.
+If it fails with `Dashboard template not found`, tell the user to install or update to the embedded-template CLI build (`skillscope` 2.0.1 or newer). Raw `scan --json` is a fallback, not the main dashboard path.

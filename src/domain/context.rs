@@ -6,13 +6,13 @@ use crate::analysis::usage::{self, UsageReport};
 use crate::domain::inventory::{self, Inventory, ScanSnapshot};
 use crate::domain::paths::PlatformPaths;
 
-pub struct JanitorContext {
+pub struct SkillscopeContext {
     pub paths: PlatformPaths,
     pub scan: ScanSnapshot,
     usage_cache: HashMap<u32, UsageReport>,
 }
 
-impl JanitorContext {
+impl SkillscopeContext {
     pub fn with_paths(paths: PlatformPaths) -> Result<Self> {
         let scan = inventory::scan_snapshot_with_paths(&paths)?;
         Ok(Self {

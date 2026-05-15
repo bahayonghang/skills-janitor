@@ -8,8 +8,8 @@ use crate::commands::{dashboard, fix, github, skill_install};
 use crate::domain::inventory;
 
 #[derive(Debug, Parser)]
-#[command(name = "skills-janitor")]
-#[command(author, version, about = "Cross-platform janitor for Claude Code and Codex skills", long_about = None)]
+#[command(name = "skillscope")]
+#[command(author, version, about = "Local skill audit and dashboard for Claude Code and Codex skills", long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
     command: Commands,

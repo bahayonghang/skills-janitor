@@ -124,7 +124,7 @@ pub fn scan_snapshot_with_paths(paths: &PlatformPaths) -> Result<ScanSnapshot> {
     let mut skills = Vec::new();
     for root in paths.skill_roots() {
         for dir in paths::iter_skill_dirs(&root.path)? {
-            if dir.file_name().and_then(|n| n.to_str()) == Some("skills-janitor") {
+            if dir.file_name().and_then(|n| n.to_str()) == Some("skillscope") {
                 continue;
             }
             skills.push(scan_skill_entry(&root, &dir)?);
@@ -349,7 +349,7 @@ pub fn find_installed_skill(name: &str) -> Result<Option<(PathBuf, Frontmatter)>
 }
 
 pub fn print_scan_human(inventory: &Inventory) {
-    println!("=== Skills Janitor - Inventory ===");
+    println!("=== Skillscope - Inventory ===");
     println!("Scan date: {}", inventory.scan_date);
     println!("Skills: {}", inventory.skills.len());
     println!("Plugins: {}", inventory.plugins.len());

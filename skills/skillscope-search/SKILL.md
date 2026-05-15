@@ -1,5 +1,5 @@
 ---
-name: janitor-search
+name: skillscope-search
 description: "Search GitHub for new skills to install. Also use with --compare to analyze a local skill against GitHub alternatives and marketplace competition."
 metadata:
   version: 2.0.1
@@ -10,13 +10,13 @@ metadata:
 Before doing anything else, check whether the Rust CLI is installed:
 
 ```bash
-skills-janitor --version
+skillscope --version
 ```
 
 If it is not installed, stop and tell the user to install it with Cargo:
 
 ```bash
-cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+cargo install skillscope --git https://github.com/bahayonghang/skillscope --bin skillscope --locked --force
 ```
 
 If the user does not have Rust/Cargo, tell them to download the latest GitHub Release binary for their platform instead. Do not fall back to Python, Bash, or curl scripts unless the user explicitly asks for legacy mode.
@@ -28,10 +28,10 @@ Search GitHub for Claude Code skills by keyword, or compare a local skill agains
 
 ```bash
 # Search for skills
-skills-janitor search <keyword> [--limit N] [--json]
+skillscope search <keyword> [--limit N] [--json]
 
 # Compare your skill against GitHub alternatives
-skills-janitor compare <skill-name> [--json]
+skillscope compare <skill-name> [--json]
 ```
 
 Legacy fallback only when explicitly requested:
@@ -62,7 +62,7 @@ Analyzes a local skill against alternatives found on GitHub:
 - Reports market position (unique niche vs. crowded space)
 
 ```bash
-skills-janitor compare my-marketing-skill
+skillscope compare my-marketing-skill
 ```
 
 ## Rate Limits
@@ -73,6 +73,6 @@ skills-janitor compare my-marketing-skill
 
 ## Related Skills
 
-- For checking which skills you actually use: `/janitor-usage`
-- For token cost analysis: `/janitor-tokens`
-- For pre-install overlap check: `/janitor-precheck`
+- For checking which skills you actually use: `/skillscope-usage`
+- For token cost analysis: `/skillscope-tokens`
+- For pre-install overlap check: `/skillscope-precheck`

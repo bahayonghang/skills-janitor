@@ -1,29 +1,29 @@
 {
-  "name": "skills-janitor",
+  "name": "skillscope",
   "owner": {
     "name": "李永航",
     "url": "https://github.com/bahayonghang"
   },
   "metadata": {
-    "description": "Audit, track usage, and manage your Claude Code skills. 7 actions, zero dependencies. Fork with Windows support.",
+    "description": "Local skill audit, usage analytics, health checks, and an embedded HTML dashboard for Claude Code and Codex skills.",
     "version": "2.0.1",
-    "repository": "https://github.com/bahayonghang/skills-janitor",
+    "repository": "https://github.com/bahayonghang/skillscope",
     "upstream": "https://github.com/khendzel/skills-janitor"
   },
   "plugins": [
     {
-      "name": "skills-janitor",
-      "description": "7 skill hygiene tools: audit, health report, auto-fix, usage tracking, token cost analysis, GitHub search, and pre-install overlap check.",
+      "name": "skillscope",
+      "description": "7 skill hygiene tools backed by the skillscope Rust CLI: audit, health report, auto-fix, usage tracking, token cost analysis, GitHub search, and pre-install overlap check.",
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/janitor-audit",
-        "./skills/janitor-report",
-        "./skills/janitor-fix",
-        "./skills/janitor-usage",
-        "./skills/janitor-tokens",
-        "./skills/janitor-search",
-        "./skills/janitor-precheck"
+        "./skills/skillscope-audit",
+        "./skills/skillscope-report",
+        "./skills/skillscope-fix",
+        "./skills/skillscope-usage",
+        "./skills/skillscope-tokens",
+        "./skills/skillscope-search",
+        "./skills/skillscope-precheck"
       ]
     }
   ]

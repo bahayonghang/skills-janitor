@@ -1,5 +1,5 @@
 ---
-name: janitor-tokens
+name: skillscope-tokens
 description: "Show how many context window tokens each skill consumes. Use when the user asks about token cost, context budget, skill size, or wants to know which skills waste the most context space."
 metadata:
   version: 2.0.1
@@ -10,13 +10,13 @@ metadata:
 Before doing anything else, check whether the Rust CLI is installed:
 
 ```bash
-skills-janitor --version
+skillscope --version
 ```
 
 If it is not installed, stop and tell the user to install it with Cargo:
 
 ```bash
-cargo install skills-janitor --git https://github.com/bahayonghang/skills-janitor --bin skills-janitor --locked --force
+cargo install skillscope --git https://github.com/bahayonghang/skillscope --bin skillscope --locked --force
 ```
 
 If the user does not have Rust/Cargo, tell them to download the latest GitHub Release binary for their platform instead. Do not fall back to Python, Bash, or curl scripts unless the user explicitly asks for legacy mode.
@@ -27,7 +27,7 @@ Show how many tokens each skill's system prompt consumes and identify unused ski
 ## How to Run
 
 ```bash
-skills-janitor tokens [--budget N] [--weeks N] [--json]
+skillscope tokens [--budget N] [--weeks N] [--json]
 ```
 
 Legacy fallback only when explicitly requested:
@@ -45,7 +45,7 @@ bash <scripts_dir>/tokencost.sh [--budget N] [--weeks N] [--json]
 ## Output
 
 ```
-=== Skills Janitor - Context Window Cost ===
+=== Skillscope - Context Window Cost ===
 Budget: 200,000 tokens
 
   Skill                               Tokens  Budget  Used?  Last Used
@@ -80,19 +80,19 @@ Budget: 200,000 tokens
 
 - Remove unused skills with the highest token cost first
 - Skills you actively use are worth keeping regardless of size
-- Use `/janitor-report` to find other issues before cleaning up
+- Use `/skillscope-report` to find other issues before cleaning up
 
 ## Related Skills
 
-- For the integrated visual dashboard: `skills-janitor dashboard --open`
-- For usage tracking: `/janitor-usage`
-- For removing broken skills: `/janitor-fix --prune`
-- For full health report: `/janitor-report`
+- For the integrated visual dashboard: `skillscope dashboard --open`
+- For usage tracking: `/skillscope-usage`
+- For removing broken skills: `/skillscope-fix --prune`
+- For full health report: `/skillscope-report`
 
 ## Dashboard Troubleshooting
 
-Use `skills-janitor dashboard --open` for browser reports. Only add `--weeks N` when the user explicitly asks for a custom analysis period.
+Use `skillscope dashboard --open` for browser reports. Only add `--weeks N` when the user explicitly asks for a custom analysis period.
 
-If a dashboard command fails with `unexpected argument '--weeks'`, retry once without `--weeks` and report that the installed CLI is stale; users should update to `skills-janitor` 2.0.1 or newer.
+If a dashboard command fails with `unexpected argument '--weeks'`, retry once without `--weeks` and report that the installed CLI is stale; users should update to `skillscope` 2.0.1 or newer.
 
-If it fails with `Dashboard template not found`, tell the user to install or update to the embedded-template CLI build (`skills-janitor` 2.0.1 or newer). Raw `scan --json` is a fallback, not the main dashboard path.
+If it fails with `Dashboard template not found`, tell the user to install or update to the embedded-template CLI build (`skillscope` 2.0.1 or newer). Raw `scan --json` is a fallback, not the main dashboard path.

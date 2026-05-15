@@ -1,4 +1,4 @@
 #!/bin/bash
-# Legacy compatibility wrapper. Prefer: skills-janitor scan --json
+# Legacy compatibility wrapper. Prefer: skillscope scan --json
 set -euo pipefail
-exec skills-janitor scan --json "$@"
+exec skillscope scan --json "$@"
