@@ -8,9 +8,5 @@ pub fn print_json<T: Serialize>(value: &T) -> Result<()> {
 
 #[allow(dead_code)]
 pub fn human_bool(value: bool) -> &'static str {
-    if value {
-        "yes"
-    } else {
-        "no"
-    }
+    if value { "yes" } else { "no" }
 }

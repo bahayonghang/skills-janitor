@@ -173,7 +173,9 @@ fn lint_record(record: &SkillRecord, issues: &mut Vec<LintIssue>) {
                 issues,
                 Severity::Warning,
                 record,
-                format!("Description too short ({desc_len} chars) - should be 50-200 for good triggering"),
+                format!(
+                    "Description too short ({desc_len} chars) - should be 50-200 for good triggering"
+                ),
             );
         } else if desc_len > 500 {
             push(

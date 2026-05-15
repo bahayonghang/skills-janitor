@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 
 use crate::cli::{CompareArgs, PrecheckArgs, SearchArgs};
@@ -160,10 +160,10 @@ fn github_get_json(url: &str) -> Result<serde_json::Value> {
     let mut request = ureq::get(url)
         .header("User-Agent", "skills-janitor")
         .header("Accept", "application/vnd.github+json");
-    if let Ok(token) = std::env::var("GITHUB_TOKEN") {
-        if !token.trim().is_empty() {
-            request = request.header("Authorization", &format!("Bearer {token}"));
-        }
+    if let Ok(token) = std::env::var("GITHUB_TOKEN")
+        && !token.trim().is_empty()
+    {
+        request = request.header("Authorization", &format!("Bearer {token}"));
     }
     let mut response = request.call()?;
     Ok(response.body_mut().read_json()?)
@@ -245,10 +245,10 @@ fn load_skill_source(source: &str) -> Result<String> {
         let mut request = ureq::get(&raw)
             .header("User-Agent", "skills-janitor")
             .header("Accept", "text/plain");
-        if let Ok(token) = std::env::var("GITHUB_TOKEN") {
-            if !token.trim().is_empty() {
-                request = request.header("Authorization", &format!("Bearer {token}"));
-            }
+        if let Ok(token) = std::env::var("GITHUB_TOKEN")
+            && !token.trim().is_empty()
+        {
+            request = request.header("Authorization", &format!("Bearer {token}"));
         }
         let mut response = request.call()?;
         return Ok(response.body_mut().read_to_string()?);

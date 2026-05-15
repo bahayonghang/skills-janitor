@@ -1,8 +1,8 @@
 [package]
 name = "skills-janitor"
 version = "2.0.2"
-edition = "2021"
-rust-version = "1.82"
+edition = "2024"
+rust-version = "1.90"
 license = "MIT"
 description = "Cross-platform CLI for auditing and maintaining Claude Code and Codex skills."
 repository = "https://github.com/bahayonghang/skills-janitor"
